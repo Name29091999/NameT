@@ -987,6 +987,70 @@ body.grey-theme{
 }
 </style>
 
+
+<style id="namet-mobile-photo-and-meta-v24">
+/* Make all four metadata rows one compact block.
+   The negative margin compensates for the old accumulated card spacing rules. */
+.card-meta{
+  margin:0 !important;
+  padding:0 !important;
+  gap:0 !important;
+}
+.card-meta-field{
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  line-height:1.35 !important;
+}
+.card-subcategory{
+  display:block !important;
+  margin:-7px 0 0 0 !important;
+  padding:0 !important;
+  line-height:1.35 !important;
+}
+
+/* Mobile hero: show the complete portrait instead of cropping its sides/top.
+   A blurred copy fills any unused area, matching the desktop treatment. */
+@media(max-width:700px){
+  .hero-section{
+    height:min(78vh,650px) !important;
+    min-height:510px !important;
+    position:relative !important;
+    overflow:hidden !important;
+    background-image:
+      linear-gradient(rgba(0,0,0,.30),rgba(0,0,0,.30)),
+      url("https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=2400&q=88") !important;
+    background-position:center !important;
+    background-size:cover !important;
+  }
+  .hero-section::before{
+    display:block !important;
+    content:"";
+    position:absolute;
+    inset:-20px;
+    background:inherit;
+    background-position:center !important;
+    background-size:cover !important;
+    filter:blur(16px);
+    transform:scale(1.06);
+    opacity:.64;
+    z-index:0;
+  }
+  .hero-img{
+    position:absolute !important;
+    inset:0 !important;
+    width:100% !important;
+    height:100% !important;
+    object-fit:contain !important;
+    object-position:center center !important;
+    filter:brightness(.70) !important;
+    z-index:1 !important;
+  }
+  .hero-shade{z-index:2 !important}
+  .hero-title{z-index:3 !important}
+}
+</style>
+
 </head>
 <body>
 <div class="marquee-container"><div class="marquee-track">NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; </div></div>
