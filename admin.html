@@ -136,6 +136,23 @@ input[type=file]{padding:10px!important}
 }
 </style>
 
+
+<style id="namet-admin-examples-v4">
+.field-example{
+  margin-top:7px;
+  padding-left:2px;
+  color:var(--muted,#8f8f8f);
+  opacity:.72;
+  font-size:12px;
+  line-height:1.35;
+  font-weight:450;
+  transition:opacity .18s ease,color .18s ease;
+}
+.field:focus-within .field-example{
+  opacity:.92;
+}
+</style>
+
 </head>
 <body>
 <header class="namet-admin-header">
@@ -167,10 +184,10 @@ input[type=file]{padding:10px!important}
   <div class="section-kicker">NAMET / ADMIN</div><h2 id="formHeading">Додати товар</h2><br>
   <form id="productForm">
     <div class="grid2">
-      <div class="field"><label id="lTitle">Назва *</label><input id="title" required></div>
-      <div class="field"><label id="lSku">Артикул</label><input id="sku"></div>
-      <div class="field"><label id="lCat">Категорія *</label><select id="category"><option value="clothes">Одяг</option><option value="shoes">Взуття</option><option value="accessories">Аксесуари</option></select></div>
-      <div class="field"><label id="lSubcat">Підкатегорія *</label><select id="subcategory"></select></div>
+      <div class="field"><label id="lTitle">Назва *</label><input id="title" required><div class="field-example">Наприклад: Кросівки Air Jordan 1</div></div>
+      <div class="field"><label id="lSku">Артикул</label><input id="sku"><div class="field-example">Наприклад: DK96-8</div></div>
+      <div class="field"><label id="lCat">Категорія *</label><select id="category"><option value="clothes">Одяг</option><option value="shoes">Взуття</option><option value="accessories">Аксесуари</option></select><div class="field-example">Наприклад: Одяг</div></div>
+      <div class="field"><label id="lSubcat">Підкатегорія *</label><select id="subcategory"></select><div class="field-example" id="subcategoryExample">Наприклад: Худі</div></div>
       <div class="field">
         <label id="lBrand">Бренд *</label>
         <select id="brand" required>
@@ -191,7 +208,7 @@ input[type=file]{padding:10px!important}
           <option value="Інше">Інше / Другое / Other</option>
         </select>
       </div>
-      <div class="field"><label id="lPrice">Ціна (UAH) *</label><input id="price" type="number" min="0" step="0.01" required></div>
+      <div class="field"><label id="lPrice">Ціна (UAH) *</label><input id="price" type="number" min="0" step="0.01" required><div class="field-example">Наприклад: 2499</div></div>
       <div class="field"><label id="lTg">Посилання Telegram *</label><input id="tg" type="url" required placeholder="https://t.me/..."></div>
       <div class="field wide"><label id="lImage">Нове зображення</label><input id="image" type="file" accept="image/*"><small id="imageHint" class="count"></small></div>
       <div class="field wide"><label id="lSizes">Розміри</label><div id="sizes" class="sizes"></div></div>
@@ -780,6 +797,27 @@ load();
   if(saved && [...theme.options].some(o=>o.value===saved)) theme.value=saved;
   paintTheme();
   paintDrawerText();
+})();
+</script>
+
+
+<script id="namet-admin-examples-runtime-v4">
+(() => {
+  const examples={
+    clothes:"Наприклад: Худі",
+    shoes:"Наприклад: Кросівки",
+    accessories:"Наприклад: Рюкзак"
+  };
+  function syncSubcategoryExample(){
+    const cat=document.getElementById("category");
+    const ex=document.getElementById("subcategoryExample");
+    if(cat&&ex) ex.textContent=examples[cat.value]||"Наприклад: Худі";
+  }
+  document.addEventListener("DOMContentLoaded",syncSubcategoryExample);
+  document.getElementById("category")?.addEventListener("change",syncSubcategoryExample);
+  document.querySelectorAll('[data-edit-id],.edit-btn').forEach(b=>
+    b.addEventListener("click",()=>setTimeout(syncSubcategoryExample,0))
+  );
 })();
 </script>
 
