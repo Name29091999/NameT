@@ -184,9 +184,9 @@ input[type=file]{padding:10px!important}
   <div class="section-kicker">NAMET / ADMIN</div><h2 id="formHeading">Додати товар</h2><br>
   <form id="productForm">
     <div class="grid2">
-      <div class="field"><label id="lTitle">Назва *</label><input id="title" required><div class="field-example">Наприклад: Кросівки Air Jordan 1</div></div>
-      <div class="field"><label id="lSku">Артикул</label><input id="sku"><div class="field-example">Наприклад: DK96-8</div></div>
-      <div class="field"><label id="lCat">Категорія *</label><select id="category"><option value="clothes">Одяг</option><option value="shoes">Взуття</option><option value="accessories">Аксесуари</option></select><div class="field-example">Наприклад: Одяг</div></div>
+      <div class="field"><label id="lTitle">Назва *</label><input id="title" required><div class="field-example" id="exampleTitle">Наприклад: Кросівки Air Jordan 1</div></div>
+      <div class="field"><label id="lSku">Артикул</label><input id="sku"><div class="field-example" id="exampleSku">Наприклад: DK96-8</div></div>
+      <div class="field"><label id="lCat">Категорія *</label><select id="category"><option value="clothes">Одяг</option><option value="shoes">Взуття</option><option value="accessories">Аксесуари</option></select><div class="field-example" id="exampleCategory">Наприклад: Одяг</div></div>
       <div class="field"><label id="lSubcat">Підкатегорія *</label><select id="subcategory"></select><div class="field-example" id="subcategoryExample">Наприклад: Худі</div></div>
       <div class="field">
         <label id="lBrand">Бренд *</label>
@@ -208,7 +208,7 @@ input[type=file]{padding:10px!important}
           <option value="Інше">Інше / Другое / Other</option>
         </select>
       </div>
-      <div class="field"><label id="lPrice">Ціна (UAH) *</label><input id="price" type="number" min="0" step="0.01" required><div class="field-example">Наприклад: 2499</div></div>
+      <div class="field"><label id="lPrice">Ціна (UAH) *</label><input id="price" type="number" min="0" step="0.01" required><div class="field-example" id="examplePrice">Наприклад: 2499</div></div>
       <div class="field"><label id="lTg">Посилання Telegram *</label><input id="tg" type="url" required placeholder="https://t.me/..."></div>
       <div class="field wide"><label id="lImage">Нове зображення</label><input id="image" type="file" accept="image/*"><small id="imageHint" class="count"></small></div>
       <div class="field wide"><label id="lSizes">Розміри</label><div id="sizes" class="sizes"></div></div>
@@ -801,23 +801,54 @@ load();
 </script>
 
 
-<script id="namet-admin-examples-runtime-v4">
+
+
+
+<script id="namet-admin-examples-i18n-v5">
 (() => {
-  const examples={
-    clothes:"Наприклад: Худі",
-    shoes:"Наприклад: Кросівки",
-    accessories:"Наприклад: Рюкзак"
+  const EX={
+    uk:{prefix:"Наприклад",title:"Кросівки Air Jordan 1",sku:"DK96-8",category:"Одяг",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"Худі",shoes:"Кросівки",accessories:"Рюкзак"}},
+    ru:{prefix:"Например",title:"Кроссовки Air Jordan 1",sku:"DK96-8",category:"Одежда",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"Худи",shoes:"Кроссовки",accessories:"Рюкзак"}},
+    en:{prefix:"Example",title:"Air Jordan 1 sneakers",sku:"DK96-8",category:"Clothing",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"Hoodie",shoes:"Sneakers",accessories:"Backpack"}},
+    be:{prefix:"Напрыклад",title:"Красоўкі Air Jordan 1",sku:"DK96-8",category:"Адзенне",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"Худзі",shoes:"Красоўкі",accessories:"Заплечнік"}},
+    de:{prefix:"Beispiel",title:"Air Jordan 1 Sneaker",sku:"DK96-8",category:"Kleidung",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"Hoodie",shoes:"Sneaker",accessories:"Rucksack"}},
+    zh:{prefix:"例如",title:"Air Jordan 1 运动鞋",sku:"DK96-8",category:"服装",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"连帽衫",shoes:"运动鞋",accessories:"背包"}},
+    pl:{prefix:"Przykład",title:"Sneakersy Air Jordan 1",sku:"DK96-8",category:"Odzież",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"Bluza z kapturem",shoes:"Sneakersy",accessories:"Plecak"}}
   };
-  function syncSubcategoryExample(){
-    const cat=document.getElementById("category");
-    const ex=document.getElementById("subcategoryExample");
-    if(cat&&ex) ex.textContent=examples[cat.value]||"Наприклад: Худі";
+
+  function currentLang(){
+    return document.getElementById("lang")?.value ||
+           document.getElementById("languageSelect")?.value ||
+           document.getElementById("langSelect")?.value ||
+           localStorage.getItem("adminLang") ||
+           localStorage.getItem("language") || "uk";
   }
-  document.addEventListener("DOMContentLoaded",syncSubcategoryExample);
-  document.getElementById("category")?.addEventListener("change",syncSubcategoryExample);
-  document.querySelectorAll('[data-edit-id],.edit-btn').forEach(b=>
-    b.addEventListener("click",()=>setTimeout(syncSubcategoryExample,0))
-  );
+  function put(id,value){
+    const el=document.getElementById(id);
+    if(el) el.textContent=value;
+  }
+  function paintExamples(){
+    const t=EX[currentLang()]||EX.uk;
+    const line=v=>`${t.prefix}: ${v}`;
+    put("exampleTitle",line(t.title));
+    put("exampleSku",line(t.sku));
+    put("exampleCategory",line(t.category));
+    put("exampleBrand",line(t.brand));
+    put("examplePrice",line(t.price));
+    put("exampleTelegram",line(t.telegram));
+    const cat=document.getElementById("category")?.value||"clothes";
+    put("subcategoryExample",line(t.sub[cat]||t.sub.clothes));
+  }
+
+  document.addEventListener("DOMContentLoaded",paintExamples);
+  document.addEventListener("change",e=>{
+    if(e.target.matches("#lang,#languageSelect,#langSelect,#category")) paintExamples();
+  });
+  // Existing admin i18n may repaint synchronously, so run our example translation just after it.
+  document.addEventListener("click",e=>{
+    if(e.target.closest("[data-lang]")) setTimeout(paintExamples,0);
+  });
+  paintExamples();
 })();
 </script>
 
