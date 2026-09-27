@@ -1,1 +1,593 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0f172a;--panel:#1e293b;--text:#f8fafc;--muted:#94a3b8;--border:#334155;--accent:#38bdf8;--ok:#22c55e;--danger:#ef4444}
+body.light{--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--accent:#0284c7}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+header{padding:15px 24px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;align-items:center}
+h1,h2{margin:0}
+h1{font-size:22px;color:var(--accent)}
+.wrap{max-width:1200px;margin:24px auto;padding:0 16px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.wide{grid-column:1/-1}
+label{font-size:13px;color:var(--muted)}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);outline:none}
+input:focus,select:focus{border-color:var(--accent)}
+.actions,.toolbar{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border:1px solid var(--border);border-radius:8px;padding:10px 14px;background:transparent;color:var(--text);font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:#001018;border-color:transparent}
+.danger{color:var(--danger)}
+.ok{color:var(--ok)}
+.sizes{display:flex;gap:7px;flex-wrap:wrap}
+.size{border:1px solid var(--border);border-radius:7px;padding:6px 9px;cursor:pointer}
+.size input{width:auto}
+.size:has(input:checked){border-color:var(--accent);color:var(--accent)}
+.toolbar{margin:14px 0}
+.toolbar input{flex:1;min-width:220px}
+.toolbar select{width:auto}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.info{display:flex;gap:12px;align-items:center;min-width:0}
+.thumb{width:64px;height:64px;object-fit:cover;border-radius:8px;background:var(--bg)}
+.name{font-weight:700;overflow-wrap:anywhere}
+.meta{font-size:12px;color:var(--muted);margin-top:4px}
+.item-actions{display:flex;gap:7px}
+.count{color:var(--muted);font-size:13px}
+.status{padding:12px;text-align:center;color:var(--muted)}
+.settings{display:flex;gap:8px;align-items:center}
+.settings select{width:auto}
+.hidden{display:none!important}
+@media(max-width:700px){header{align-items:flex-start;flex-direction:column}
+.grid2{grid-template-columns:1fr}
+.wide{grid-column:auto}
+.item{align-items:flex-start;flex-direction:column}
+.item-actions{width:100%}
+.item-actions .btn{flex:1}
+.toolbar select{width:100%}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="headTitle">Адмін-панель</h1>
+  <div class="settings">
+    <select id="lang"><option value="uk">Українська</option><option value="ru">Русский</option><option value="en">English</option><option value="be">Беларуская</option><option value="de">Deutsch</option><option value="zh">中文</option><option value="pl">Polski</option></select>
+    <select id="theme"><option value="dark">🌙</option><option value="light">☀️</option></select>
+    <select id="currency"><option value="UAH">UAH</option><option value="USD">USD</option></select>
+  </div>
+</header>
 
+<main class="wrap">
+<section class="panel">
+  <h2 id="formHeading">Додати товар</h2><br>
+  <form id="productForm">
+    <div class="grid2">
+      <div class="field"><label id="lTitle">Назва *</label><input id="title" required></div>
+      <div class="field"><label id="lSku">Артикул</label><input id="sku"></div>
+      <div class="field"><label id="lCat">Категорія *</label><select id="category"><option value="clothes">Одяг</option><option value="shoes">Взуття</option><option value="accessories">Аксесуари</option></select></div>
+      <div class="field">
+        <label id="lBrand">Бренд *</label>
+        <select id="brand" required>
+          <option value="Nike">Nike</option>
+          <option value="Adidas">Adidas</option>
+          <option value="Puma">Puma</option>
+          <option value="Reebok">Reebok</option>
+          <option value="New Balance">New Balance</option>
+          <option value="Jordan">Jordan</option>
+          <option value="Under Armour">Under Armour</option>
+          <option value="Stone Island">Stone Island</option>
+          <option value="The North Face">The North Face</option>
+          <option value="Tommy Hilfiger">Tommy Hilfiger</option>
+          <option value="Calvin Klein">Calvin Klein</option>
+          <option value="Gucci">Gucci</option>
+          <option value="Balenciaga">Balenciaga</option>
+          <option value="Zara">Zara</option>
+          <option value="Інше">Інше / Другое / Other</option>
+        </select>
+      </div>
+      <div class="field"><label id="lPrice">Ціна (UAH) *</label><input id="price" type="number" min="0" step="0.01" required></div>
+      <div class="field"><label id="lTg">Посилання Telegram *</label><input id="tg" type="url" required placeholder="https://t.me/..."></div>
+      <div class="field wide"><label id="lImage">Нове зображення</label><input id="image" type="file" accept="image/*"><small id="imageHint" class="count"></small></div>
+      <div class="field wide"><label id="lSizes">Розміри</label><div id="sizes" class="sizes"></div></div>
+    </div><br>
+    <div class="actions">
+      <button class="btn primary" id="saveBtn" type="submit">Опублікувати товар</button>
+      <button class="btn danger hidden" id="cancelBtn" type="button">Скасувати редагування</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel">
+  <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h2 id="listHeading">Мої товари</h2><span class="count"><span id="count">0</span></span></div>
+  <div class="toolbar">
+    <input id="search" type="search" placeholder="Пошук за назвою або артикулом...">
+    <select id="catFilter"><option value="all">Усі категорії</option><option value="clothes">Одяг</option><option value="shoes">Взуття</option><option value="accessories">Аксесуари</option></select>
+    <select id="sort"><option value="new">Спочатку нові</option><option value="old">Спочатку старі</option><option value="priceAsc">Ціна ↑</option><option value="priceDesc">Ціна ↓</option></select>
+  </div>
+  <div id="list" class="list"><div class="status">Завантаження...</div></div>
+</section>
+</main>
+
+<script>
+const SUPABASE_URL="https://otsvxfzwnyfgflidzgwn.supabase.co";
+ const SUPABASE_KEY="sb_publishable_6MxlwlYqIEd_BVXCNN1Kwg_291v8xKz";
+ const UAH_PER_USD=43.68;
+ const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ const CLOTHES=["XXS","XS","S","M","L","XL","XXL","3XL","4XL","One Size"];
+ const SHOES=["35","35.5","36","36.5","37","37.5","38","38.5","39","39.5","40","40.5","41","41.5","42","42.5","43","43.5","44","44.5","45","45.5","46","46.5"];
+ let products=[],
+ editingId=null,
+ editingImage=null;
+ const I={
+   uk:{
+    head:"Адмін-панель",
+    add:"Додати товар",
+    edit:"Редагувати товар",
+    title:"Назва *",
+    sku:"Артикул",
+    cat:"Категорія *",
+    brand:"Бренд *",
+    price:"Ціна (UAH) *",
+    tg:"Посилання Telegram *",
+    image:"Нове зображення",
+    imageNew:"Для нового товару виберіть фото.",
+    imageEdit:"Залиште порожнім, щоб зберегти старе фото.",
+    sizes:"Розміри",
+    publish:"Опублікувати товар",
+    save:"Зберегти зміни",
+    cancel:"Скасувати редагування",
+    mine:"Мої товари",
+    search:"Пошук за назвою або артикулом...",
+    all:"Усі категорії",
+    clothes:"Одяг",
+    shoes:"Взуття",
+    acc:"Аксесуари",
+    new:"Спочатку нові",
+    old:"Спочатку старі",
+    pa:"Ціна ↑",
+    pd:"Ціна ↓",
+    editBtn:"Редагувати",
+    del:"Видалити",
+    loading:"Завантаження...",
+    empty:"Товарів не знайдено",
+    confirm:"Видалити цей товар?",
+    needImg:"Виберіть зображення.",
+    saved:"Товар збережено.",
+    deleted:"Товар видалено.",
+    error:"Помилка: "
+  },
+   ru:{
+    head:"Админ-панель",
+    add:"Добавить товар",
+    edit:"Редактировать товар",
+    title:"Название *",
+    sku:"Артикул",
+    cat:"Категория *",
+    brand:"Бренд *",
+    price:"Цена (UAH) *",
+    tg:"Ссылка Telegram *",
+    image:"Новое изображение",
+    imageNew:"Для нового товара выберите фото.",
+    imageEdit:"Оставьте пустым, чтобы сохранить старое фото.",
+    sizes:"Размеры",
+    publish:"Опубликовать товар",
+    save:"Сохранить изменения",
+    cancel:"Отменить редактирование",
+    mine:"Мои товары",
+    search:"Поиск по названию или артикулу...",
+    all:"Все категории",
+    clothes:"Одежда",
+    shoes:"Обувь",
+    acc:"Аксессуары",
+    new:"Сначала новые",
+    old:"Сначала старые",
+    pa:"Цена ↑",
+    pd:"Цена ↓",
+    editBtn:"Редактировать",
+    del:"Удалить",
+    loading:"Загрузка...",
+    empty:"Товары не найдены",
+    confirm:"Удалить этот товар?",
+    needImg:"Выберите изображение.",
+    saved:"Товар сохранён.",
+    deleted:"Товар удалён.",
+    error:"Ошибка: "
+  },
+   en:{
+    head:"Admin Panel",
+    add:"Add product",
+    edit:"Edit product",
+    title:"Product name *",
+    sku:"SKU",
+    cat:"Category *",
+    brand:"Brand *",
+    price:"Price (UAH) *",
+    tg:"Telegram link *",
+    image:"New image",
+    imageNew:"Choose an image for a new product.",
+    imageEdit:"Leave empty to keep the current image.",
+    sizes:"Sizes",
+    publish:"Publish product",
+    save:"Save changes",
+    cancel:"Cancel editing",
+    mine:"My products",
+    search:"Search by name or SKU...",
+    all:"All categories",
+    clothes:"Clothing",
+    shoes:"Footwear",
+    acc:"Accessories",
+    new:"Newest first",
+    old:"Oldest first",
+    pa:"Price ↑",
+    pd:"Price ↓",
+    editBtn:"Edit",
+    del:"Delete",
+    loading:"Loading...",
+    empty:"No products found",
+    confirm:"Delete this product?",
+    needImg:"Choose an image.",
+    saved:"Product saved.",
+    deleted:"Product deleted.",
+    error:"Error: "
+  },
+   be:{
+    head:"Адмін-панэль",
+    add:"Дадаць тавар",
+    edit:"Рэдагаваць тавар",
+    title:"Назва *",
+    sku:"Артыкул",
+    cat:"Катэгорыя *",
+    brand:"Брэнд *",
+    price:"Цана (UAH) *",
+    tg:"Спасылка Telegram *",
+    image:"Новая выява",
+    imageNew:"Выберыце фота для новага тавару.",
+    imageEdit:"Пакіньце пустым, каб захаваць старое фота.",
+    sizes:"Памеры",
+    publish:"Апублікаваць тавар",
+    save:"Захаваць змены",
+    cancel:"Скасаваць рэдагаванне",
+    mine:"Мае тавары",
+    search:"Пошук па назве або артыкуле...",
+    all:"Усе катэгорыі",
+    clothes:"Адзенне",
+    shoes:"Абутак",
+    acc:"Аксэсуары",
+    new:"Спачатку новыя",
+    old:"Спачатку старыя",
+    pa:"Цана ↑",
+    pd:"Цана ↓",
+    editBtn:"Рэдагаваць",
+    del:"Выдаліць",
+    loading:"Загрузка...",
+    empty:"Тавары не знойдзены",
+    confirm:"Выдаліць гэты тавар?",
+    needImg:"Выберыце выяву.",
+    saved:"Тавар захаваны.",
+    deleted:"Тавар выдалены.",
+    error:"Памылка: "
+  },
+   de:{
+    head:"Admin-Bereich",
+    add:"Produkt hinzufügen",
+    edit:"Produkt bearbeiten",
+    title:"Produktname *",
+    sku:"Artikelnummer",
+    cat:"Kategorie *",
+    brand:"Marke *",
+    price:"Preis (UAH) *",
+    tg:"Telegram-Link *",
+    image:"Neues Bild",
+    imageNew:"Wählen Sie ein Bild für das neue Produkt.",
+    imageEdit:"Leer lassen, um das aktuelle Bild zu behalten.",
+    sizes:"Größen",
+    publish:"Produkt veröffentlichen",
+    save:"Änderungen speichern",
+    cancel:"Bearbeitung abbrechen",
+    mine:"Meine Produkte",
+    search:"Nach Name oder Artikelnummer suchen...",
+    all:"Alle Kategorien",
+    clothes:"Kleidung",
+    shoes:"Schuhe",
+    acc:"Accessoires",
+    new:"Neueste zuerst",
+    old:"Älteste zuerst",
+    pa:"Preis ↑",
+    pd:"Preis ↓",
+    editBtn:"Bearbeiten",
+    del:"Löschen",
+    loading:"Wird geladen...",
+    empty:"Keine Produkte gefunden",
+    confirm:"Dieses Produkt löschen?",
+    needImg:"Wählen Sie ein Bild.",
+    saved:"Produkt gespeichert.",
+    deleted:"Produkt gelöscht.",
+    error:"Fehler: "
+  },
+   zh:{
+    head:"管理面板",
+    add:"添加商品",
+    edit:"编辑商品",
+    title:"商品名称 *",
+    sku:"商品编号",
+    cat:"分类 *",
+    brand:"品牌 *",
+    price:"价格 (UAH) *",
+    tg:"Telegram 链接 *",
+    image:"新图片",
+    imageNew:"请为新商品选择图片。",
+    imageEdit:"留空可保留当前图片。",
+    sizes:"尺码",
+    publish:"发布商品",
+    save:"保存更改",
+    cancel:"取消编辑",
+    mine:"我的商品",
+    search:"按名称或商品编号搜索...",
+    all:"所有分类",
+    clothes:"服装",
+    shoes:"鞋履",
+    acc:"配饰",
+    new:"最新优先",
+    old:"最早优先",
+    pa:"价格 ↑",
+    pd:"价格 ↓",
+    editBtn:"编辑",
+    del:"删除",
+    loading:"加载中...",
+    empty:"未找到商品",
+    confirm:"删除此商品？",
+    needImg:"请选择图片。",
+    saved:"商品已保存。",
+    deleted:"商品已删除。",
+    error:"错误："
+  },
+   pl:{
+    head:"Panel administratora",
+    add:"Dodaj produkt",
+    edit:"Edytuj produkt",
+    title:"Nazwa produktu *",
+    sku:"Numer artykułu",
+    cat:"Kategoria *",
+    brand:"Marka *",
+    price:"Cena (UAH) *",
+    tg:"Link Telegram *",
+    image:"Nowe zdjęcie",
+    imageNew:"Wybierz zdjęcie dla nowego produktu.",
+    imageEdit:"Zostaw puste, aby zachować obecne zdjęcie.",
+    sizes:"Rozmiary",
+    publish:"Opublikuj produkt",
+    save:"Zapisz zmiany",
+    cancel:"Anuluj edycję",
+    mine:"Moje produkty",
+    search:"Szukaj po nazwie lub numerze artykułu...",
+    all:"Wszystkie kategorie",
+    clothes:"Odzież",
+    shoes:"Obuwie",
+    acc:"Akcesoria",
+    new:"Najnowsze",
+    old:"Najstarsze",
+    pa:"Cena ↑",
+    pd:"Cena ↓",
+    editBtn:"Edytuj",
+    del:"Usuń",
+    loading:"Ładowanie...",
+    empty:"Nie znaleziono produktów",
+    confirm:"Usunąć ten produkt?",
+    needImg:"Wybierz zdjęcie.",
+    saved:"Produkt zapisany.",
+    deleted:"Produkt usunięty.",
+    error:"Błąd: "
+  }
+};
+ const $=id=>document.getElementById(id),
+ T=()=>I[$("lang").value]||I.uk;
+ function catName(c){
+  let t=T();
+  return c==="clothes"?t.clothes:c==="shoes"?t.shoes:c==="accessories"?t.acc:c||"—"
+}
+ function fmtPrice(v){
+  let n=Number(v)||0,
+  usd=$("currency").value==="USD",
+  locale={
+    uk:"uk-UA",
+    ru:"ru-RU",
+    en:"en-US",
+    be:"be-BY",
+    de:"de-DE",
+    zh:"zh-CN",
+    pl:"pl-PL"
+  }
+  [$("lang").value]||"uk-UA";
+  return new Intl.NumberFormat(locale,{
+    style:"currency",currency:usd?"USD":"UAH",maximumFractionDigits:usd?2:0
+  }).format(usd?n/UAH_PER_USD:n)
+}
+ function sizesUI(selected=[]){
+  let box=$("sizes"),
+  arr=$("category").value==="shoes"?SHOES:$("category").value==="accessories"?[]:CLOTHES;
+  box.replaceChildren();
+  if(!arr.length){
+    box.textContent="—";
+    return
+  }
+  arr.forEach(s=>{
+    let l=document.createElement("label");l.className="size";let i=document.createElement("input");i.type="checkbox";i.value=s;i.checked=selected.includes(s);l.append(i,document.createTextNode(" "+s));box.append(l)
+  })
+}
+ function applyText(){
+  let t=T();
+  document.documentElement.lang=$("lang").value;
+  $("headTitle").textContent=t.head;
+  $("formHeading").textContent=editingId?t.edit:t.add;
+  $("lTitle").textContent=t.title;
+  $("lSku").textContent=t.sku;
+  $("lCat").textContent=t.cat;
+  $("lBrand").textContent=t.brand;
+  $("lPrice").textContent=t.price;
+  $("lTg").textContent=t.tg;
+  $("lImage").textContent=t.image;
+  $("imageHint").textContent=editingId?t.imageEdit:t.imageNew;
+  $("lSizes").textContent=t.sizes;
+  $("saveBtn").textContent=editingId?t.save:t.publish;
+  $("cancelBtn").textContent=t.cancel;
+  $("listHeading").textContent=t.mine;
+  $("search").placeholder=t.search;
+  let c=$("catFilter").options;
+  c[0].text=t.all;
+  c[1].text=t.clothes;
+  c[2].text=t.shoes;
+  c[3].text=t.acc;
+  let fc=$("category").options;
+  fc[0].text=t.clothes;
+  fc[1].text=t.shoes;
+  fc[2].text=t.acc;
+  let s=$("sort").options;
+  s[0].text=t.new;
+  s[1].text=t.old;
+  s[2].text=t.pa;
+  s[3].text=t.pd;
+  render()
+}
+ async function load(){
+  let t=T();
+  $("list").innerHTML=`<div class="status">${t.loading}</div>`;
+  let {
+    data,
+    error
+  }
+  =await db.from("products").select("id,title,sku,category,brand,price,image_url,tg_link,sizes").order("id",{
+    ascending:false
+  });
+  if(error){
+    $("list").textContent=t.error+error.message;
+    return
+  }
+  products=data||[];
+  render()
+}
+ function render(){
+  if(!products)return;
+  let t=T(),
+  q=$("search").value.trim().toLowerCase(),
+  cat=$("catFilter").value;
+  let a=products.filter(p=>(String(p.title||"").toLowerCase().includes(q)||String(p.sku||"").toLowerCase().includes(q))&&(cat==="all"||p.category===cat));
+  let sort=$("sort").value;
+  if(sort==="old")a.sort((x,y)=>Number(x.id)-Number(y.id));
+  else if(sort==="priceAsc")a.sort((x,y)=>Number(x.price)-Number(y.price));
+  else if(sort==="priceDesc")a.sort((x,y)=>Number(y.price)-Number(x.price));
+  else a.sort((x,y)=>Number(y.id)-Number(x.id));
+  $("count").textContent=a.length;
+  $("list").replaceChildren();
+  if(!a.length){
+    let d=document.createElement("div");
+    d.className="status";
+    d.textContent=t.empty;
+    $("list").append(d);
+    return
+  }
+  a.forEach(p=>{
+    let item=document.createElement("div");item.className="item",info=document.createElement("div");info.className="info";let img=document.createElement("img");img.className="thumb";img.src=p.image_url||"";img.alt="";img.onerror=()=>img.style.visibility="hidden";let txt=document.createElement("div"),name=document.createElement("div");name.className="name";name.textContent=p.title||"—";let meta=document.createElement("div");meta.className="meta";meta.textContent=`${p.sku||"—"} · ${catName(p.category)} · ${p.brand||"—"} · ${fmtPrice(p.price)} · ${Array.isArray(p.sizes)?p.sizes.join(", "):"—"}`;txt.append(name,meta);info.append(img,txt);let acts=document.createElement("div");acts.className="item-actions";let e=document.createElement("button");e.className="btn ok";e.textContent=t.editBtn;e.onclick=()=>startEdit(p.id);let d=document.createElement("button");d.className="btn danger";d.textContent=t.del;d.onclick=()=>removeProduct(p.id);acts.append(e,d);item.append(info,acts);$("list").append(item)
+  })
+}
+ function startEdit(id){
+  let p=products.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  editingId=p.id;
+  editingImage=p.image_url||null;
+  $("title").value=p.title||"";
+  $("sku").value=p.sku||"";
+  $("category").value=p.category||"clothes";
+  $("brand").value=p.brand||"";
+  $("price").value=p.price||"";
+  $("tg").value=p.tg_link||"";
+  $("image").value="";
+  sizesUI(Array.isArray(p.sizes)?p.sizes:[]);
+  $("cancelBtn").classList.remove("hidden");
+  applyText();
+  window.scrollTo({
+    top:0,behavior:"smooth"
+  })
+}
+ function cancelEdit(){
+  editingId=null;
+  editingImage=null;
+  $("productForm").reset();
+  $("category").value="clothes";
+  sizesUI();
+  $("cancelBtn").classList.add("hidden");
+  applyText()
+}
+ async function uploadImage(file){
+  let ext=(file.name.split(".").pop()||"jpg").replace(/[^a-z0-9]/gi,"");
+  let path=`${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  let {
+    error
+  }
+  =await db.storage.from("products").upload(path,file);
+  if(error)throw error;
+  return db.storage.from("products").getPublicUrl(path).data.publicUrl
+}
+ $("productForm").addEventListener("submit",async e=>{
+  e.preventDefault();let t=T(),btn=$("saveBtn");btn.disabled=true;try{
+    let file=$("image").files[0],imageUrl=editingImage;if(file)imageUrl=await uploadImage(file);if(!imageUrl){
+      alert(t.needImg);return
+    }
+    let row={
+      title:$("title").value.trim(),sku:$("sku").value.trim()||null,category:$("category").value,brand:$("brand").value.trim(),price:Number($("price").value),image_url:imageUrl,tg_link:$("tg").value.trim(),sizes:[...document.querySelectorAll("#sizes input:checked")].map(x=>x.value)
+    };let result=editingId?await db.from("products").update(row).eq("id",editingId):await db.from("products").insert([row]);if(result.error)throw result.error;alert(t.saved);cancelEdit();await load()
+  } catch(err){
+    alert(t.error+err.message)
+  } finally{
+    btn.disabled=false;applyText()
+  }
+});
+ async function removeProduct(id){
+  let t=T();
+  if(!confirm(t.confirm))return;
+  let {
+    error
+  }
+  =await db.from("products").delete().eq("id",id);
+  if(error){
+    alert(t.error+error.message);
+    return
+  }
+  alert(t.deleted);
+  if(String(editingId)===String(id))cancelEdit();
+  await load()
+}
+ $("category").onchange=()=>sizesUI();
+$("cancelBtn").onclick=cancelEdit;
+$("search").oninput=render;
+$("catFilter").onchange=render;
+$("sort").onchange=render;
+ $("lang").onchange=()=>{
+  localStorage.setItem("admin_lang",$("lang").value);
+  applyText()
+};
+$("theme").onchange=()=>{
+  localStorage.setItem("admin_theme",$("theme").value);
+  document.body.classList.toggle("light",$("theme").value==="light")
+};
+$("currency").onchange=()=>{
+  localStorage.setItem("admin_currency",$("currency").value);
+  render()
+};
+ $("lang").value=localStorage.getItem("admin_lang")||"uk";
+$("theme").value=localStorage.getItem("admin_theme")||"dark";
+$("currency").value=localStorage.getItem("admin_currency")||"UAH";
+document.body.classList.toggle("light",$("theme").value==="light");
+sizesUI();
+applyText();
+load();
+</script>
+</body>
+</html>
