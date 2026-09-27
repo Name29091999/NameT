@@ -988,7 +988,7 @@ body.grey-theme{
       try {
         const { data, error } = await supabaseClient
           .from("products")
-          .select("id,title,sku,category,brand,price,image_url,tg_link,sizes")
+          .select("id,title,sku,category,subcategory,brand,price,image_url,tg_link,sizes")
           .order("id", { ascending: false });
 
         if (error) throw error;
@@ -1539,6 +1539,149 @@ body.grey-theme{
   };
 
   build();
+})();
+</script>
+
+
+<style id="namet-index-subcategories-v12">
+.product-subcategory{
+  margin-top:4px;color:var(--text-muted,#aaa);font-size:12px;line-height:1.35;
+}
+.subcategory-filter-wrap{margin-top:14px}
+.subcategory-filter-wrap label{display:block;margin-bottom:7px;font-size:13px;color:var(--text-muted,#aaa);font-weight:650}
+#subcategoryFilter{
+  width:100%;padding:11px 12px;border:1px solid var(--border-color,#303030);
+  border-radius:10px;background:var(--card-bg,#181818);color:var(--text-color,#f1f1f1);outline:none;
+}
+#subcategoryFilter:focus{border-color:var(--text-color,#f1f1f1)}
+</style>
+
+<script id="namet-index-subcategories-v12">
+(() => {
+  const DATA={
+    clothes:[
+      ["hoodies","Худі","Худи","Hoodies","Худзі","Hoodies","连帽衫","Bluzy z kapturem"],
+      ["sweatshirts","Світшоти","Свитшоты","Sweatshirts","Світшоты","Sweatshirts","卫衣","Bluzy"],
+      ["sweaters","Кофти","Кофты","Sweaters","Кофты","Pullover","毛衣","Swetry"],
+      ["tshirts","Футболки","Футболки","T-shirts","Футболкі","T-Shirts","T恤","T-shirty"],
+      ["shirts","Сорочки","Рубашки","Shirts","Кашулі","Hemden","衬衫","Koszule"],
+      ["pants","Штани","Штаны","Pants","Штаны","Hosen","裤子","Spodnie"],
+      ["jeans","Джинси","Джинсы","Jeans","Джынсы","Jeans","牛仔裤","Jeansy"],
+      ["shorts","Шорти","Шорты","Shorts","Шорты","Shorts","短裤","Szorty"],
+      ["jackets","Куртки","Куртки","Jackets","Курткі","Jacken","夹克","Kurtki"],
+      ["coats","Пальта","Пальто","Coats","Паліто","Mäntel","大衣","Płaszcze"],
+      ["dresses","Сукні","Платья","Dresses","Сукенкі","Kleider","连衣裙","Sukienki"],
+      ["skirts","Спідниці","Юбки","Skirts","Спадніцы","Röcke","半身裙","Spódnice"],
+      ["underwear","Білизна","Бельё","Underwear","Бялізна","Unterwäsche","内衣","Bielizna"]
+    ],
+    shoes:[
+      ["sneakers","Кросівки","Кроссовки","Sneakers","Красоўкі","Sneaker","运动鞋","Sneakersy"],
+      ["boots","Черевики","Ботинки","Boots","Чаравікі","Stiefel","靴子","Buty"],
+      ["sandals","Босоніжки","Босоножки","Sandals","Басаножкі","Sandalen","凉鞋","Sandały"],
+      ["slippers","Капці","Тапочки","Slippers","Тапачкі","Hausschuhe","拖鞋","Kapcie"],
+      ["loafers","Лофери","Лоферы","Loafers","Лоферы","Loafer","乐福鞋","Mokasyny"],
+      ["shoes_classic","Туфлі","Туфли","Shoes","Туфлі","Schuhe","皮鞋","Półbuty"]
+    ],
+    accessories:[
+      ["bags","Сумки","Сумки","Bags","Сумкі","Taschen","包","Torby"],
+      ["backpacks","Рюкзаки","Рюкзаки","Backpacks","Заплечнікі","Rucksäcke","背包","Plecaki"],
+      ["caps","Кепки","Кепки","Caps","Кепкі","Caps","帽子","Czapki"],
+      ["belts","Ремені","Ремни","Belts","Рамяні","Gürtel","腰带","Paski"],
+      ["glasses","Окуляри","Очки","Glasses","Акуляры","Brillen","眼镜","Okulary"],
+      ["wallets","Гаманці","Кошельки","Wallets","Кашалькі","Geldbörsen","钱包","Portfele"]
+    ]
+  };
+  const LI={uk:1,ru:2,en:3,be:4,de:5,zh:6,pl:7};
+  const TXT={
+    uk:{label:"Підкатегорія",all:"Усі підкатегорії"},
+    ru:{label:"Подкатегория",all:"Все подкатегории"},
+    en:{label:"Subcategory",all:"All subcategories"},
+    be:{label:"Падкатэгорыя",all:"Усе падкатэгорыі"},
+    de:{label:"Unterkategorie",all:"Alle Unterkategorien"},
+    zh:{label:"子分类",all:"所有子分类"},
+    pl:{label:"Podkategoria",all:"Wszystkie podkategorie"}
+  };
+  const lang=()=>document.getElementById("languageSelect")?.value ||
+                   document.getElementById("langSelect")?.value ||
+                   document.getElementById("lang")?.value ||
+                   localStorage.getItem("language") || localStorage.getItem("lang") || "uk";
+  function label(v){
+    const i=LI[lang()]||1;
+    for(const rows of Object.values(DATA)){const r=rows.find(x=>x[0]===v);if(r)return r[i]||r[1]}
+    return v||"";
+  }
+  function categoryValue(){
+    const candidates=["categoryFilter","filterCategory","categorySelect"];
+    for(const id of candidates){const e=document.getElementById(id);if(e&&e.value)return e.value}
+    const checked=document.querySelector('input[name="category"]:checked');
+    return checked?.value||"all";
+  }
+  function ensureFilter(){
+    if(document.getElementById("subcategoryFilter"))return;
+    const modal=document.querySelector("#filtersModal .modal-content,#filterModal .modal-content,#filtersModal,#filterModal,.filters-modal,.filter-modal");
+    if(!modal)return;
+    const wrap=document.createElement("div");wrap.className="subcategory-filter-wrap";
+    wrap.innerHTML='<label id="subcategoryFilterLabel"></label><select id="subcategoryFilter"></select>';
+    const actions=modal.querySelector(".filter-actions,.actions");
+    actions ? modal.insertBefore(wrap,actions) : modal.appendChild(wrap);
+    document.getElementById("subcategoryFilter").addEventListener("change",applyClientFilter);
+    rebuildFilter();
+  }
+  function rebuildFilter(){
+    const sel=document.getElementById("subcategoryFilter"); if(!sel)return;
+    const keep=sel.value, l=lang(), t=TXT[l]||TXT.uk, cat=categoryValue();
+    document.getElementById("subcategoryFilterLabel").textContent=t.label;
+    sel.replaceChildren(new Option(t.all,"all"));
+    let rows=cat==="all" ? Object.values(DATA).flat() : (DATA[cat]||[]);
+    rows.forEach(r=>sel.add(new Option(r[LI[l]||1]||r[1],r[0])));
+    if([...sel.options].some(o=>o.value===keep))sel.value=keep;
+  }
+  function applyClientFilter(){
+    const wanted=document.getElementById("subcategoryFilter")?.value||"all";
+    // Cards get data-subcategory below. Hide only cards that survived the site's own filters.
+    document.querySelectorAll("[data-subcategory].product-card,.product-card[data-subcategory]").forEach(card=>{
+      const match=wanted==="all"||card.dataset.subcategory===wanted;
+      card.classList.toggle("namet-subcategory-hidden",!match);
+      if(!match)card.style.setProperty("display","none","important");
+      else if(card.classList.contains("namet-subcategory-hidden")) card.style.removeProperty("display");
+    });
+  }
+  function decorateCards(){
+    const cards=[...document.querySelectorAll(".product-card")];
+    cards.forEach(card=>{
+      // Try to map card to product by data-id/id/SKU/title using globals exposed by the original storefront.
+      let p=null;
+      const id=card.dataset.id||card.dataset.productId;
+      const pools=[window.products,window.allProducts,window.filteredProducts].filter(Array.isArray);
+      for(const pool of pools){
+        p=pool.find(x=>id && String(x.id)===String(id));
+        if(p)break;
+      }
+      if(!p){
+        const sku=card.querySelector(".sku,.product-sku")?.textContent||"";
+        for(const pool of pools){p=pool.find(x=>x.sku && sku.includes(x.sku));if(p)break}
+      }
+      if(!p?.subcategory)return;
+      card.dataset.subcategory=p.subcategory;
+      let target=card.querySelector(".product-info,.card-info,.product-details")||card;
+      let el=card.querySelector(".product-subcategory");
+      if(!el){el=document.createElement("div");el.className="product-subcategory";target.appendChild(el)}
+      el.textContent=label(p.subcategory);
+    });
+    applyClientFilter();
+  }
+  function refresh(){ensureFilter();rebuildFilter();decorateCards()}
+  const obs=new MutationObserver(()=>requestAnimationFrame(refresh));
+  document.addEventListener("DOMContentLoaded",()=>{
+    refresh();
+    const root=document.getElementById("productsGrid")||document.body;
+    obs.observe(root,{childList:true,subtree:true});
+    document.addEventListener("change",e=>{
+      if(e.target.matches("#languageSelect,#langSelect,#lang,input[name=category],#categoryFilter,#filterCategory,#categorySelect"))
+        setTimeout(refresh,0);
+    });
+    document.querySelectorAll("#btnFilters,[data-open-filters]").forEach(b=>b.addEventListener("click",()=>setTimeout(refresh,0)));
+  });
 })();
 </script>
 
