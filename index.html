@@ -530,6 +530,113 @@ body.grey-theme{
 }
 </style>
 
+
+<style id="namet-subcategory-native-v13">
+.card-subcategory{
+  margin-top:3px;
+  display:block;
+  line-height:1.35;
+  white-space:nowrap;
+}
+.card-subcategory-label{
+  color:var(--text-muted);
+  font-size:12px;
+  font-weight:500;
+  letter-spacing:0;
+  opacity:.72;
+}
+.card-subcategory-label::after{content:": "}
+.card-subcategory-value{
+  color:var(--text-color);
+  font-size:12px;
+  font-weight:600;
+}
+</style>
+
+
+<style id="namet-card-meta-v15">
+.card .meta{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  margin-top:8px;
+}
+.card-meta-field{
+  display:block;
+  line-height:1.35;
+  white-space:nowrap;
+}
+.card-meta-label{
+  color:var(--text-muted);
+  font-size:12px;
+  font-weight:500;
+  letter-spacing:0;
+  opacity:.72;
+}
+.card-meta-label::after{content:": "}
+.card-meta-value{
+  color:var(--text-color);
+  font-size:12px;
+  font-weight:600;
+}
+</style>
+
+
+<style id="namet-card-spacing-v17">
+/* SKU and metadata should read as one compact information block */
+.card .sku{
+  margin-bottom:0 !important;
+  color:var(--text-color) !important;
+  opacity:1 !important;
+}
+.card .meta{
+  margin-top:0 !important;
+  gap:0 !important;
+}
+.card-subcategory{
+  margin-top:0 !important;
+}
+
+/* Keep the labels muted, but the actual SKU/value fully visible */
+.card .sku,
+.card .sku *{
+  opacity:1 !important;
+}
+</style>
+
+
+<style id="namet-card-spacing-v18">
+/* Correct selectors: real elements are .card-sku and .card-meta */
+.card-sku{
+  margin-bottom:0 !important;
+  opacity:1 !important;
+  color:var(--text-color) !important;
+}
+.card-meta{
+  margin-top:0 !important;
+  margin-bottom:0 !important;
+  gap:0 !important;
+}
+.card-meta-field{
+  margin:0 !important;
+}
+.card-subcategory{
+  margin-top:0 !important;
+  margin-bottom:0 !important;
+}
+
+/* SKU label muted, SKU value white — same visual logic as other fields */
+.card-sku-label{
+  color:var(--text-muted);
+  opacity:.72;
+}
+.card-sku-value{
+  color:var(--text-color);
+  opacity:1;
+  font-weight:500;
+}
+</style>
+
 </head>
 <body>
 <div class="marquee-container"><div class="marquee-track">NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; </div></div>
@@ -574,6 +681,12 @@ body.grey-theme{
           <option value="clothes" id="optClothes">Одяг</option>
           <option value="shoes" id="optShoes">Взуття</option>
           <option value="accessories" id="optAcc">Аксесуари</option>
+        </select>
+      </div>
+      <div class="filter-section">
+        <span class="filter-label" id="secSubcat">Підкатегорія:</span>
+        <select id="subcategorySelect">
+          <option value="all">Усі підкатегорії</option>
         </select>
       </div>
 
@@ -912,6 +1025,69 @@ body.grey-theme{
       return SYSTEM_VALUES[original.toLocaleLowerCase()]?.[getLang()] || original;
     }
 
+    const SUBCATEGORIES = {
+      clothes: [
+        ["hoodies","Худі","Худи","Hoodies","Худзі","Hoodies","连帽衫","Bluzy z kapturem"],
+        ["sweatshirts","Світшоти","Свитшоты","Sweatshirts","Світшоты","Sweatshirts","卫衣","Bluzy"],
+        ["sweaters","Кофти","Кофты","Sweaters","Кофты","Pullover","毛衣","Swetry"],
+        ["tshirts","Футболки","Футболки","T-shirts","Футболкі","T-Shirts","T恤","T-shirty"],
+        ["shirts","Сорочки","Рубашки","Shirts","Кашулі","Hemden","衬衫","Koszule"],
+        ["pants","Штани","Штаны","Pants","Штаны","Hosen","裤子","Spodnie"],
+        ["jeans","Джинси","Джинсы","Jeans","Джынсы","Jeans","牛仔裤","Jeansy"],
+        ["shorts","Шорти","Шорты","Shorts","Шорты","Shorts","短裤","Szorty"],
+        ["jackets","Куртки","Куртки","Jackets","Курткі","Jacken","夹克","Kurtki"],
+        ["coats","Пальта","Пальто","Coats","Паліто","Mäntel","大衣","Płaszcze"],
+        ["dresses","Сукні","Платья","Dresses","Сукенкі","Kleider","连衣裙","Sukienki"],
+        ["skirts","Спідниці","Юбки","Skirts","Спадніцы","Röcke","半身裙","Spódnice"],
+        ["underwear","Білизна","Бельё","Underwear","Бялізна","Unterwäsche","内衣","Bielizna"]
+      ],
+      shoes: [
+        ["sneakers","Кросівки","Кроссовки","Sneakers","Красоўкі","Sneaker","运动鞋","Sneakersy"],
+        ["boots","Черевики","Ботинки","Boots","Чаравікі","Stiefel","靴子","Buty"],
+        ["sandals","Босоніжки","Босоножки","Sandals","Басаножкі","Sandalen","凉鞋","Sandały"],
+        ["slippers","Капці","Тапочки","Slippers","Тапачкі","Hausschuhe","拖鞋","Kapcie"],
+        ["loafers","Лофери","Лоферы","Loafers","Лоферы","Loafer","乐福鞋","Mokasyny"],
+        ["shoes_classic","Туфлі","Туфли","Shoes","Туфлі","Schuhe","皮鞋","Półbuty"]
+      ],
+      accessories: [
+        ["bags","Сумки","Сумки","Bags","Сумкі","Taschen","包","Torby"],
+        ["backpacks","Рюкзаки","Рюкзаки","Backpacks","Заплечнікі","Rucksäcke","背包","Plecaki"],
+        ["caps","Кепки","Кепки","Caps","Кепкі","Caps","帽子","Czapki"],
+        ["belts","Ремені","Ремни","Belts","Рамяні","Gürtel","腰带","Paski"],
+        ["glasses","Окуляри","Очки","Glasses","Акуляры","Brillen","眼镜","Okulary"],
+        ["wallets","Гаманці","Кошельки","Wallets","Кашалькі","Geldbörsen","钱包","Portfele"]
+      ]
+    };
+    const SUBCAT_LANG_INDEX = {uk:1,ru:2,en:3,be:4,de:5,zh:6,pl:7};
+    const SUBCAT_TEXT = {
+      uk:["Підкатегорія:","Усі підкатегорії"], ru:["Подкатегория:","Все подкатегории"],
+      en:["Subcategory:","All subcategories"], be:["Падкатэгорыя:","Усе падкатэгорыі"],
+      de:["Unterkategorie:","Alle Unterkategorien"], zh:["子分类：","所有子分类"],
+      pl:["Podkategoria:","Wszystkie podkategorie"]
+    };
+    function subcategoryName(value) {
+      const idx = SUBCAT_LANG_INDEX[getLang()] || 1;
+      for (const rows of Object.values(SUBCATEGORIES)) {
+        const row = rows.find(r => r[0] === value);
+        if (row) return row[idx] || row[1];
+      }
+      return value || "—";
+    }
+    function renderSubcategoryOptions(preserve=true) {
+      const select = $("subcategorySelect");
+      if (!select) return;
+      const old = preserve ? select.value : "all";
+      const lang = getLang();
+      const text = SUBCAT_TEXT[lang] || SUBCAT_TEXT.uk;
+      const category = $("categorySelect").value;
+      select.replaceChildren();
+      select.add(new Option(text[1], "all"));
+      const rows = category === "all" ? Object.values(SUBCATEGORIES).flat() : (SUBCATEGORIES[category] || []);
+      rows.forEach(row => select.add(new Option(row[SUBCAT_LANG_INDEX[lang] || 1] || row[1], row[0])));
+      if ([...select.options].some(o => o.value === old)) select.value = old;
+      $("secSubcat").textContent = text[0];
+    }
+
     function categoryName(category) {
       const t = getT();
       return ({clothes:t.catClothes, shoes:t.catShoes, accessories:t.catAccessories})[category] || category || "—";
@@ -1021,6 +1197,7 @@ body.grey-theme{
       const search = $("searchInput").value.trim().toLocaleLowerCase();
       const category = $("categorySelect").value;
       const selectedBrand = $("brandSelect").value;
+      const selectedSubcategory = $("subcategorySelect").value;
       const fromRaw = Number($("priceFrom").value);
       const toRaw = Number($("priceTo").value);
       const filterCurrency = $("currencySelect").value;
@@ -1039,13 +1216,14 @@ body.grey-theme{
         const sku = String(p.sku || "").toLocaleLowerCase();
         const matchText = title.includes(search) || translatedTitle.includes(search) || sku.includes(search);
         const matchCategory = category === "all" || p.category === category;
+        const matchSubcategory = selectedSubcategory === "all" || p.subcategory === selectedSubcategory;
         const matchBrand = selectedBrand === "all" || String(p.brand || "").toLocaleLowerCase() === selectedBrand.toLocaleLowerCase();
         const price = Number(p.price);
         const safePrice = Number.isFinite(price) ? price : 0;
         const matchPrice = safePrice >= pFrom && safePrice <= pTo;
         const matchSize = checkedSizes.length === 0 ||
           (Array.isArray(p.sizes) && checkedSizes.some(size => p.sizes.includes(size)));
-        return matchText && matchCategory && matchBrand && matchPrice && matchSize;
+        return matchText && matchCategory && matchSubcategory && matchBrand && matchPrice && matchSize;
       });
 
       const sort = $("sortSelect").value;
@@ -1105,17 +1283,60 @@ body.grey-theme{
 
         const sku = document.createElement("div");
         sku.className = "card-sku";
-        sku.textContent = `${t.skuLbl}: ${p.sku || "—"}`;
+        const skuLabel = document.createElement("span");
+        skuLabel.className = "card-sku-label";
+        skuLabel.textContent = `${t.skuLbl}: `;
+        const skuValue = document.createElement("span");
+        skuValue.className = "card-sku-value";
+        skuValue.textContent = p.sku || "—";
+        sku.append(skuLabel, skuValue);
 
         const meta = document.createElement("div");
         meta.className = "card-meta";
-        meta.textContent = `${t.brandLbl}: ${translateSystemValue(p.brand)} | ${t.catLbl}: ${categoryName(p.category)}`;
+        meta.replaceChildren();
+
+        const addMetaField = (label, value) => {
+          const field = document.createElement("span");
+          field.className = "card-meta-field";
+
+          const labelEl = document.createElement("span");
+          labelEl.className = "card-meta-label";
+          labelEl.textContent = label;
+
+          const valueEl = document.createElement("span");
+          valueEl.className = "card-meta-value";
+          valueEl.textContent = value;
+
+          field.append(labelEl, valueEl);
+          meta.appendChild(field);
+        };
+
+        addMetaField(t.brandLbl, translateSystemValue(p.brand));
+        addMetaField(t.catLbl, categoryName(p.category));
+
+        const subcat = document.createElement("div");
+        subcat.className = "card-subcategory";
+        if (p.subcategory) {
+          const subcatTitle = document.createElement("span");
+          subcatTitle.className = "card-subcategory-label";
+          const subcatLabels = {
+            uk:"Підкатегорія", ru:"Подкатегория", en:"Subcategory",
+            be:"Падкатэгорыя", de:"Unterkategorie", zh:"子分类", pl:"Podkategoria"
+          };
+          subcatTitle.textContent = subcatLabels[getLang()] || subcatLabels.uk;
+          const subcatValue = document.createElement("span");
+          subcatValue.className = "card-subcategory-value";
+          subcatValue.textContent = subcategoryName(p.subcategory);
+          subcat.append(subcatTitle, subcatValue);
+        }
 
         const price = document.createElement("div");
         price.className = "card-price";
         price.textContent = formatPrice(p.price);
 
-        body.append(title, sku, meta, price);
+        body.append(title, sku, meta);
+        if (p.subcategory) body.appendChild(subcat);
+        body.appendChild(price);
 
         if (Array.isArray(p.sizes) && p.sizes.length) {
           const sizes = document.createElement("div");
@@ -1164,6 +1385,7 @@ body.grey-theme{
       $("optClothes").textContent = t.optClothes;
       $("optShoes").textContent = t.optShoes;
       $("optAcc").textContent = t.optAcc;
+      renderSubcategoryOptions(true);
       $("lblBrand").textContent = t.lblBrand;
       $("optAllBrands").textContent = t.optAllBrands;
       $("optOtherBrand").textContent = t.optOtherBrand;
@@ -1199,11 +1421,13 @@ body.grey-theme{
 
     function resetFilters() {
       $("categorySelect").value = "all";
+      renderSubcategoryOptions(false);
       $("brandSelect").value = "all";
       $("priceFrom").value = "";
       $("priceTo").value = "";
       $("sortSelect").value = "default";
       renderSizeCheckboxes(false);
+    renderSubcategoryOptions(false);
       filterAndRender();
     }
 
@@ -1248,7 +1472,7 @@ body.grey-theme{
       }
     });
 
-    $("categorySelect").addEventListener("change", () => renderSizeCheckboxes(true));
+    $("categorySelect").addEventListener("change", () => { renderSizeCheckboxes(true); renderSubcategoryOptions(false); });
     $("btnApplyFilter").addEventListener("click", () => {
       filterAndRender();
       closeModal("filterModal");
@@ -1542,148 +1766,6 @@ body.grey-theme{
 })();
 </script>
 
-
-<style id="namet-index-subcategories-v12">
-.product-subcategory{
-  margin-top:4px;color:var(--text-muted,#aaa);font-size:12px;line-height:1.35;
-}
-.subcategory-filter-wrap{margin-top:14px}
-.subcategory-filter-wrap label{display:block;margin-bottom:7px;font-size:13px;color:var(--text-muted,#aaa);font-weight:650}
-#subcategoryFilter{
-  width:100%;padding:11px 12px;border:1px solid var(--border-color,#303030);
-  border-radius:10px;background:var(--card-bg,#181818);color:var(--text-color,#f1f1f1);outline:none;
-}
-#subcategoryFilter:focus{border-color:var(--text-color,#f1f1f1)}
-</style>
-
-<script id="namet-index-subcategories-v12">
-(() => {
-  const DATA={
-    clothes:[
-      ["hoodies","Худі","Худи","Hoodies","Худзі","Hoodies","连帽衫","Bluzy z kapturem"],
-      ["sweatshirts","Світшоти","Свитшоты","Sweatshirts","Світшоты","Sweatshirts","卫衣","Bluzy"],
-      ["sweaters","Кофти","Кофты","Sweaters","Кофты","Pullover","毛衣","Swetry"],
-      ["tshirts","Футболки","Футболки","T-shirts","Футболкі","T-Shirts","T恤","T-shirty"],
-      ["shirts","Сорочки","Рубашки","Shirts","Кашулі","Hemden","衬衫","Koszule"],
-      ["pants","Штани","Штаны","Pants","Штаны","Hosen","裤子","Spodnie"],
-      ["jeans","Джинси","Джинсы","Jeans","Джынсы","Jeans","牛仔裤","Jeansy"],
-      ["shorts","Шорти","Шорты","Shorts","Шорты","Shorts","短裤","Szorty"],
-      ["jackets","Куртки","Куртки","Jackets","Курткі","Jacken","夹克","Kurtki"],
-      ["coats","Пальта","Пальто","Coats","Паліто","Mäntel","大衣","Płaszcze"],
-      ["dresses","Сукні","Платья","Dresses","Сукенкі","Kleider","连衣裙","Sukienki"],
-      ["skirts","Спідниці","Юбки","Skirts","Спадніцы","Röcke","半身裙","Spódnice"],
-      ["underwear","Білизна","Бельё","Underwear","Бялізна","Unterwäsche","内衣","Bielizna"]
-    ],
-    shoes:[
-      ["sneakers","Кросівки","Кроссовки","Sneakers","Красоўкі","Sneaker","运动鞋","Sneakersy"],
-      ["boots","Черевики","Ботинки","Boots","Чаравікі","Stiefel","靴子","Buty"],
-      ["sandals","Босоніжки","Босоножки","Sandals","Басаножкі","Sandalen","凉鞋","Sandały"],
-      ["slippers","Капці","Тапочки","Slippers","Тапачкі","Hausschuhe","拖鞋","Kapcie"],
-      ["loafers","Лофери","Лоферы","Loafers","Лоферы","Loafer","乐福鞋","Mokasyny"],
-      ["shoes_classic","Туфлі","Туфли","Shoes","Туфлі","Schuhe","皮鞋","Półbuty"]
-    ],
-    accessories:[
-      ["bags","Сумки","Сумки","Bags","Сумкі","Taschen","包","Torby"],
-      ["backpacks","Рюкзаки","Рюкзаки","Backpacks","Заплечнікі","Rucksäcke","背包","Plecaki"],
-      ["caps","Кепки","Кепки","Caps","Кепкі","Caps","帽子","Czapki"],
-      ["belts","Ремені","Ремни","Belts","Рамяні","Gürtel","腰带","Paski"],
-      ["glasses","Окуляри","Очки","Glasses","Акуляры","Brillen","眼镜","Okulary"],
-      ["wallets","Гаманці","Кошельки","Wallets","Кашалькі","Geldbörsen","钱包","Portfele"]
-    ]
-  };
-  const LI={uk:1,ru:2,en:3,be:4,de:5,zh:6,pl:7};
-  const TXT={
-    uk:{label:"Підкатегорія",all:"Усі підкатегорії"},
-    ru:{label:"Подкатегория",all:"Все подкатегории"},
-    en:{label:"Subcategory",all:"All subcategories"},
-    be:{label:"Падкатэгорыя",all:"Усе падкатэгорыі"},
-    de:{label:"Unterkategorie",all:"Alle Unterkategorien"},
-    zh:{label:"子分类",all:"所有子分类"},
-    pl:{label:"Podkategoria",all:"Wszystkie podkategorie"}
-  };
-  const lang=()=>document.getElementById("languageSelect")?.value ||
-                   document.getElementById("langSelect")?.value ||
-                   document.getElementById("lang")?.value ||
-                   localStorage.getItem("language") || localStorage.getItem("lang") || "uk";
-  function label(v){
-    const i=LI[lang()]||1;
-    for(const rows of Object.values(DATA)){const r=rows.find(x=>x[0]===v);if(r)return r[i]||r[1]}
-    return v||"";
-  }
-  function categoryValue(){
-    const candidates=["categoryFilter","filterCategory","categorySelect"];
-    for(const id of candidates){const e=document.getElementById(id);if(e&&e.value)return e.value}
-    const checked=document.querySelector('input[name="category"]:checked');
-    return checked?.value||"all";
-  }
-  function ensureFilter(){
-    if(document.getElementById("subcategoryFilter"))return;
-    const modal=document.querySelector("#filtersModal .modal-content,#filterModal .modal-content,#filtersModal,#filterModal,.filters-modal,.filter-modal");
-    if(!modal)return;
-    const wrap=document.createElement("div");wrap.className="subcategory-filter-wrap";
-    wrap.innerHTML='<label id="subcategoryFilterLabel"></label><select id="subcategoryFilter"></select>';
-    const actions=modal.querySelector(".filter-actions,.actions");
-    actions ? modal.insertBefore(wrap,actions) : modal.appendChild(wrap);
-    document.getElementById("subcategoryFilter").addEventListener("change",applyClientFilter);
-    rebuildFilter();
-  }
-  function rebuildFilter(){
-    const sel=document.getElementById("subcategoryFilter"); if(!sel)return;
-    const keep=sel.value, l=lang(), t=TXT[l]||TXT.uk, cat=categoryValue();
-    document.getElementById("subcategoryFilterLabel").textContent=t.label;
-    sel.replaceChildren(new Option(t.all,"all"));
-    let rows=cat==="all" ? Object.values(DATA).flat() : (DATA[cat]||[]);
-    rows.forEach(r=>sel.add(new Option(r[LI[l]||1]||r[1],r[0])));
-    if([...sel.options].some(o=>o.value===keep))sel.value=keep;
-  }
-  function applyClientFilter(){
-    const wanted=document.getElementById("subcategoryFilter")?.value||"all";
-    // Cards get data-subcategory below. Hide only cards that survived the site's own filters.
-    document.querySelectorAll("[data-subcategory].product-card,.product-card[data-subcategory]").forEach(card=>{
-      const match=wanted==="all"||card.dataset.subcategory===wanted;
-      card.classList.toggle("namet-subcategory-hidden",!match);
-      if(!match)card.style.setProperty("display","none","important");
-      else if(card.classList.contains("namet-subcategory-hidden")) card.style.removeProperty("display");
-    });
-  }
-  function decorateCards(){
-    const cards=[...document.querySelectorAll(".product-card")];
-    cards.forEach(card=>{
-      // Try to map card to product by data-id/id/SKU/title using globals exposed by the original storefront.
-      let p=null;
-      const id=card.dataset.id||card.dataset.productId;
-      const pools=[window.products,window.allProducts,window.filteredProducts].filter(Array.isArray);
-      for(const pool of pools){
-        p=pool.find(x=>id && String(x.id)===String(id));
-        if(p)break;
-      }
-      if(!p){
-        const sku=card.querySelector(".sku,.product-sku")?.textContent||"";
-        for(const pool of pools){p=pool.find(x=>x.sku && sku.includes(x.sku));if(p)break}
-      }
-      if(!p?.subcategory)return;
-      card.dataset.subcategory=p.subcategory;
-      let target=card.querySelector(".product-info,.card-info,.product-details")||card;
-      let el=card.querySelector(".product-subcategory");
-      if(!el){el=document.createElement("div");el.className="product-subcategory";target.appendChild(el)}
-      el.textContent=label(p.subcategory);
-    });
-    applyClientFilter();
-  }
-  function refresh(){ensureFilter();rebuildFilter();decorateCards()}
-  const obs=new MutationObserver(()=>requestAnimationFrame(refresh));
-  document.addEventListener("DOMContentLoaded",()=>{
-    refresh();
-    const root=document.getElementById("productsGrid")||document.body;
-    obs.observe(root,{childList:true,subtree:true});
-    document.addEventListener("change",e=>{
-      if(e.target.matches("#languageSelect,#langSelect,#lang,input[name=category],#categoryFilter,#filterCategory,#categorySelect"))
-        setTimeout(refresh,0);
-    });
-    document.querySelectorAll("#btnFilters,[data-open-filters]").forEach(b=>b.addEventListener("click",()=>setTimeout(refresh,0)));
-  });
-})();
-</script>
 
 </body>
 </html>
