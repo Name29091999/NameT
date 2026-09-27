@@ -28,7 +28,7 @@
     }
 
     * { box-sizing: border-box; }
- 
+
     body {
       margin: 0;
       padding: 0;
@@ -924,6 +924,66 @@ body.grey-theme{
     text-overflow:ellipsis !important;
     font-size:clamp(14px,4vw,18px) !important;
   }
+}
+</style>
+
+
+<style id="namet-mobile-real-fix-v23">
+/* REAL mobile header: override the old rule that changes header to column */
+@media (max-width:700px){
+  body > header{
+    height:58px !important;
+    min-height:58px !important;
+    padding:0 14px !important;
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:12px !important;
+    text-align:left !important;
+  }
+
+  body > header #menuBtn{
+    order:0 !important;
+    flex:0 0 auto !important;
+    margin:0 !important;
+  }
+
+  body > header #siteTitle{
+    order:1 !important;
+    display:block !important;
+    flex:0 1 auto !important;
+    width:auto !important;
+    max-width:calc(100vw - 82px) !important;
+    margin:0 !important;
+    padding:0 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    text-align:left !important;
+    font-size:clamp(14px,4vw,18px) !important;
+    line-height:1.1 !important;
+  }
+
+  body > header .header-btns{
+    display:none !important;
+  }
+}
+
+/* Category and subcategory must visually touch as consecutive metadata rows */
+.card-meta{
+  margin-bottom:0 !important;
+  padding-bottom:0 !important;
+}
+.card-meta-field{
+  margin:0 !important;
+  padding:0 !important;
+  line-height:1.35 !important;
+}
+.card-subcategory{
+  margin:-1px 0 0 0 !important;
+  padding:0 !important;
+  line-height:1.35 !important;
 }
 </style>
 
@@ -2139,44 +2199,7 @@ body.grey-theme{
 </script>
 
 
-<script id="namet-mobile-header-runtime-v22">
-(() => {
-  function fixMobileHeader(){
-    if(!matchMedia("(max-width:700px)").matches) return;
 
-    const menu =
-      document.getElementById("menuBtn") ||
-      document.querySelector(".hamburger,.menu-toggle,[aria-label*='menu' i]");
-
-    if(!menu) return;
-
-    const header = menu.closest("header") || menu.parentElement;
-    if(!header) return;
-
-    header.style.setProperty("justify-content","flex-start","important");
-    header.style.setProperty("text-align","left","important");
-
-    /* Find the text element beside the hamburger without depending on one old class name. */
-    const candidates=[...header.querySelectorAll("span,div,p,h1,h2,h3,a")].filter(el=>{
-      const t=(el.textContent||"").trim();
-      return t && el!==menu && /Premium/i.test(t) && el.children.length<4;
-    });
-    const title=candidates[0];
-    if(title){
-      title.style.setProperty("white-space","nowrap","important");
-      title.style.setProperty("overflow","hidden","important");
-      title.style.setProperty("text-overflow","ellipsis","important");
-      title.style.setProperty("width","auto","important");
-      title.style.setProperty("max-width","calc(100vw - 90px)","important");
-      title.style.setProperty("margin","0","important");
-      title.style.setProperty("text-align","left","important");
-      title.style.setProperty("font-size","clamp(14px,4vw,18px)","important");
-    }
-  }
-  document.addEventListener("DOMContentLoaded",fixMobileHeader);
-  addEventListener("resize",fixMobileHeader);
-})();
-</script>
 
 </body>
 </html>
