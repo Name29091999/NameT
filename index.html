@@ -28,7 +28,7 @@
     }
 
     * { box-sizing: border-box; }
-
+ 
     body {
       margin: 0;
       padding: 0;
@@ -868,6 +868,62 @@ body.grey-theme{
 #btnResetFilter:active{
   transform:scale(.985);
   background:rgba(239,68,68,.19) !important;
+}
+</style>
+
+
+<style id="namet-mobile-header-card-fix-v22">
+/* Remove the remaining Category -> Subcategory gap everywhere */
+.card .card-meta{
+  margin-bottom:0 !important;
+}
+.card .card-meta-field:last-child{
+  margin-bottom:0 !important;
+}
+.card .card-subcategory{
+  margin-top:0 !important;
+  padding-top:0 !important;
+}
+
+/* Phone header: keep hamburger + "Clothing Premium Footwear" together on the left */
+@media (max-width:700px){
+  .main-header,
+  .site-header,
+  header.header{
+    justify-content:flex-start !important;
+    text-align:left !important;
+  }
+
+  /* Actual redesigned header elements */
+  .topbar,
+  .header-inner{
+    justify-content:flex-start !important;
+    text-align:left !important;
+  }
+
+  .menu-toggle,
+  .hamburger,
+  #menuBtn{
+    flex:0 0 auto !important;
+    margin-left:0 !important;
+    margin-right:12px !important;
+  }
+
+  .nav-title,
+  .header-title,
+  .category-title,
+  .brand-nav,
+  .topbar-title{
+    flex:0 1 auto !important;
+    width:auto !important;
+    max-width:calc(100vw - 88px) !important;
+    margin:0 !important;
+    text-align:left !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    font-size:clamp(14px,4vw,18px) !important;
+  }
 }
 </style>
 
@@ -2079,6 +2135,46 @@ body.grey-theme{
   document.addEventListener("change",e=>{
     if(e.target.matches("#languageSelect,#langSelect")) paint();
   });
+})();
+</script>
+
+
+<script id="namet-mobile-header-runtime-v22">
+(() => {
+  function fixMobileHeader(){
+    if(!matchMedia("(max-width:700px)").matches) return;
+
+    const menu =
+      document.getElementById("menuBtn") ||
+      document.querySelector(".hamburger,.menu-toggle,[aria-label*='menu' i]");
+
+    if(!menu) return;
+
+    const header = menu.closest("header") || menu.parentElement;
+    if(!header) return;
+
+    header.style.setProperty("justify-content","flex-start","important");
+    header.style.setProperty("text-align","left","important");
+
+    /* Find the text element beside the hamburger without depending on one old class name. */
+    const candidates=[...header.querySelectorAll("span,div,p,h1,h2,h3,a")].filter(el=>{
+      const t=(el.textContent||"").trim();
+      return t && el!==menu && /Premium/i.test(t) && el.children.length<4;
+    });
+    const title=candidates[0];
+    if(title){
+      title.style.setProperty("white-space","nowrap","important");
+      title.style.setProperty("overflow","hidden","important");
+      title.style.setProperty("text-overflow","ellipsis","important");
+      title.style.setProperty("width","auto","important");
+      title.style.setProperty("max-width","calc(100vw - 90px)","important");
+      title.style.setProperty("margin","0","important");
+      title.style.setProperty("text-align","left","important");
+      title.style.setProperty("font-size","clamp(14px,4vw,18px)","important");
+    }
+  }
+  document.addEventListener("DOMContentLoaded",fixMobileHeader);
+  addEventListener("resize",fixMobileHeader);
 })();
 </script>
 
