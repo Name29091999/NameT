@@ -1051,6 +1051,38 @@ body.grey-theme{
 }
 </style>
 
+
+<style id="namet-mobile-hero-clean-v25">
+/* Phone only: one clean image, no blurred duplicate.
+   Slight horizontal expansion lets the portrait fill the phone naturally
+   while keeping the subject essentially complete. Desktop is untouched. */
+@media(max-width:700px){
+  .hero-section{
+    background:#0f0f0f !important;
+    background-image:none !important;
+    height:min(78vh,650px) !important;
+    min-height:510px !important;
+    overflow:hidden !important;
+  }
+  .hero-section::before{
+    display:none !important;
+    content:none !important;
+    background:none !important;
+    filter:none !important;
+  }
+  .hero-img{
+    width:106% !important;
+    max-width:none !important;
+    height:100% !important;
+    left:50% !important;
+    right:auto !important;
+    transform:translateX(-50%) !important;
+    object-fit:contain !important;
+    object-position:center center !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="marquee-container"><div class="marquee-track">NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; </div></div>
