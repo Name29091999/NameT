@@ -1083,6 +1083,38 @@ body.grey-theme{
 }
 </style>
 
+
+<style id="namet-filter-contrast-v26">
+/* More contrast in every theme, especially the light theme */
+#btnApplyFilter{
+  background:rgba(34,197,94,.16) !important;
+  border-color:rgba(22,163,74,.72) !important;
+  color:#16a34a !important;
+  box-shadow:inset 0 0 0 1px rgba(34,197,94,.06);
+}
+#btnApplyFilter:hover{
+  background:rgba(34,197,94,.24) !important;
+  border-color:#16a34a !important;
+  box-shadow:0 7px 20px rgba(34,197,94,.15);
+}
+
+#btnResetFilter{
+  background:rgba(239,68,68,.15) !important;
+  border-color:rgba(220,38,38,.68) !important;
+  color:#dc2626 !important;
+  box-shadow:inset 0 0 0 1px rgba(239,68,68,.05);
+}
+#btnResetFilter:hover{
+  background:rgba(239,68,68,.23) !important;
+  border-color:#dc2626 !important;
+  box-shadow:0 7px 20px rgba(239,68,68,.14);
+}
+
+/* Dark/grey themes can keep brighter text */
+body:not(.light-theme):not(.light) #btnApplyFilter{color:#2bd65f !important}
+body:not(.light-theme):not(.light) #btnResetFilter{color:#ff5252 !important}
+</style>
+
 </head>
 <body>
 <div class="marquee-container"><div class="marquee-track">NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; </div></div>
@@ -2078,49 +2110,9 @@ body.grey-theme{
   white-space:nowrap !important;
 }
 </style>
-<script id="namet-v5-ticker-runtime">
-(() => {
-  const track=document.querySelector(".marquee-track");
-  if(!track) return;
-
-  let raf=0, x=0, last=performance.now(), groupWidth=0;
-  const speed=12.6667; // pixels per second — 3x slower than v6
-
-  const build=()=>{
-    cancelAnimationFrame(raf);
-    const word='<span class="marquee-word">NAMET</span>';
-    /* First build a generously long group so one group itself exceeds viewport width. */
-    const count=Math.max(18, Math.ceil(window.innerWidth/90)+8);
-    const group='<div class="marquee-group">'+word.repeat(count)+'</div>';
-    track.innerHTML=group+group+group;
-    groupWidth=track.children[0].getBoundingClientRect().width;
-    x=0;
-    last=performance.now();
-    track.style.transform='translate3d(0,0,0)';
-    raf=requestAnimationFrame(tick);
-  };
-
-  const tick=(now)=>{
-    const dt=Math.min((now-last)/1000,.05);
-    last=now;
-    x-=speed*dt;
-    /* Because every copy is pixel-identical, adding exactly groupWidth is invisible. */
-    if(groupWidth && x<=-groupWidth) x+=groupWidth;
-    track.style.transform=`translate3d(${x}px,0,0)`;
-    raf=requestAnimationFrame(tick);
-  };
-
-  let timer;
-  window.addEventListener("resize",()=>{
-    clearTimeout(timer);
-    timer=setTimeout(build,120);
-  });
-  build();
-})();
-</script>
 
 
-<script id="namet-v6-i18n">
+<script id="namet-v27-i18n-safe">
 (() => {
  const lang=document.getElementById("langSelect");
  const dict={
@@ -2132,36 +2124,42 @@ body.grey-theme{
    zh:{empty:"未找到商品",grey:"灰色",dark:"深色",light:"浅色",settings:"设置",filters:"🔍 筛选"},
    pl:{empty:"Nie znaleziono produktów",grey:"Szary",dark:"Ciemny",light:"Jasny",settings:"Ustawienia",filters:"🔍 Filtry"}
  };
+ const knownEmpty=new Set([
+   "товари не знайдені","товары не найдены","no products found",
+   "тавары не знойдзены","keine produkte gefunden","未找到商品",
+   "nie znaleziono produktów"
+ ]);
  function syncNameTTranslations(){
    const l=lang?.value||"uk", t=dict[l]||dict.uk;
    const grey=document.querySelector('#themeSelect option[value="grey"]');
    const dark=document.querySelector('#themeSelect option[value="dark"]');
    const light=document.querySelector('#themeSelect option[value="light"]');
-   if(grey) grey.textContent=t.grey;
-   if(dark) dark.textContent=t.dark;
-   if(light) light.textContent=t.light;
-   const drawerTitle=document.getElementById("drawerSettingsTitle");
-   if(drawerTitle) drawerTitle.textContent=t.settings;
-   const filters=document.getElementById("btnFilters");
-   if(filters) filters.textContent=t.filters;
+   if(grey && grey.textContent!==t.grey) grey.textContent=t.grey;
+   if(dark && dark.textContent!==t.dark) dark.textContent=t.dark;
+   if(light && light.textContent!==t.light) light.textContent=t.light;
 
-   /* Empty-state text can be recreated by the original render function,
-      so update it after each render/language change as well. */
+   const drawerTitle=document.getElementById("drawerSettingsTitle");
+   if(drawerTitle && drawerTitle.textContent!==t.settings) drawerTitle.textContent=t.settings;
+
+   const filters=document.getElementById("btnFilters");
+   if(filters && filters.textContent!==t.filters) filters.textContent=t.filters;
+
    document.querySelectorAll("#productsGrid .empty-msg").forEach(el=>{
      const tx=(el.textContent||"").trim().toLowerCase();
-     const known=[
-       "товари не знайдені","товары не найдены","no products found",
-       "тавары не знойдзены","keine produkte gefunden","未找到商品",
-       "nie znaleziono produktów"
-     ];
-     if(known.includes(tx)) el.textContent=t.empty;
+     if(knownEmpty.has(tx) && el.textContent!==t.empty) el.textContent=t.empty;
    });
  }
+
+ // No MutationObserver here: filtering already runs through normal UI events.
+ // A single deferred sync after those events is enough and cannot recursively observe itself.
  lang?.addEventListener("change",()=>setTimeout(syncNameTTranslations,0));
- const grid=document.getElementById("productsGrid");
- if(grid){
-   new MutationObserver(()=>syncNameTTranslations()).observe(grid,{childList:true,subtree:true});
- }
+ ["btnApplyFilter","btnResetFilter"].forEach(id=>{
+   document.getElementById(id)?.addEventListener("click",()=>setTimeout(syncNameTTranslations,0));
+ });
+ document.getElementById("searchInput")?.addEventListener("input",()=>{
+   clearTimeout(window.__nametI18nTimer);
+   window.__nametI18nTimer=setTimeout(syncNameTTranslations,60);
+ });
  syncNameTTranslations();
 })();
 </script>
@@ -2208,6 +2206,16 @@ body.grey-theme{
     track.style.transform=`translate3d(${x}px,0,0)`;
     raf=requestAnimationFrame(tick);
   };
+
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden){
+      cancelAnimationFrame(raf);
+    }else{
+      last=performance.now();
+      cancelAnimationFrame(raf);
+      raf=requestAnimationFrame(tick);
+    }
+  });
 
   build();
 })();
