@@ -136,16 +136,6 @@ input[type=file]{padding:10px!important}
 }
 </style>
 
-
-<style id="namet-admin-v2-fields">
-.field-example{
-  display:block;margin-top:1px;padding-left:2px;
-  color:var(--muted);opacity:.68;font-size:11.5px;line-height:1.35;
-  font-weight:500;transition:opacity .2s ease;
-}
-.field:focus-within .field-example{opacity:.95}
-</style>
-
 </head>
 <body>
 <header class="namet-admin-header">
@@ -177,13 +167,10 @@ input[type=file]{padding:10px!important}
   <div class="section-kicker">NAMET / ADMIN</div><h2 id="formHeading">Додати товар</h2><br>
   <form id="productForm">
     <div class="grid2">
-      <div class="field"><label id="lTitle">Назва *</label><input id="title" required><small class="field-example" id="titleExample">Наприклад: Кросівки Air Jordan</small></div>
-      <div class="field"><label id="lSku">Артикул</label><input id="sku"><small class="field-example" id="skuExample">Наприклад: DK96-8</small></div>
+      <div class="field"><label id="lTitle">Назва *</label><input id="title" required></div>
+      <div class="field"><label id="lSku">Артикул</label><input id="sku"></div>
       <div class="field"><label id="lCat">Категорія *</label><select id="category"><option value="clothes">Одяг</option><option value="shoes">Взуття</option><option value="accessories">Аксесуари</option></select></div>
-      <div class="field"><label id="lSubcat">Підкатегорія *</label>
-        <select id="subcategory" required></select>
-        <small class="field-example" id="subcatExample">Наприклад: Одяг → Худі</small>
-      </div>
+      <div class="field"><label id="lSubcat">Підкатегорія *</label><select id="subcategory"></select></div>
       <div class="field">
         <label id="lBrand">Бренд *</label>
         <select id="brand" required>
@@ -226,113 +213,6 @@ input[type=file]{padding:10px!important}
   <div id="list" class="list"><div class="status">Завантаження...</div></div>
 </section>
 </main>
-
-
-<script id="namet-admin-subcategories-v2">
-const SUBCATEGORIES={
-  clothes:[
-    ["hoodies","Худі","Худи","Hoodies","Худзі","Hoodies","连帽衫","Bluzy z kapturem"],
-    ["sweatshirts","Світшоти","Свитшоты","Sweatshirts","Світшоты","Sweatshirts","卫衣","Bluzy"],
-    ["sweaters","Кофти","Кофты","Sweaters","Кофты","Pullover","毛衣","Swetry"],
-    ["tshirts","Футболки","Футболки","T-shirts","Футболкі","T-Shirts","T恤","T-shirty"],
-    ["shirts","Сорочки","Рубашки","Shirts","Кашулі","Hemden","衬衫","Koszule"],
-    ["pants","Штани","Штаны","Pants","Штаны","Hosen","裤子","Spodnie"],
-    ["jeans","Джинси","Джинсы","Jeans","Джынсы","Jeans","牛仔裤","Jeansy"],
-    ["shorts","Шорти","Шорты","Shorts","Шорты","Shorts","短裤","Szorty"],
-    ["jackets","Куртки","Куртки","Jackets","Курткі","Jacken","夹克","Kurtki"],
-    ["coats","Пальта","Пальто","Coats","Паліто","Mäntel","大衣","Płaszcze"],
-    ["dresses","Сукні","Платья","Dresses","Сукенкі","Kleider","连衣裙","Sukienki"],
-    ["skirts","Спідниці","Юбки","Skirts","Спадніцы","Röcke","半身裙","Spódnice"],
-    ["underwear","Білизна","Бельё","Underwear","Бялізна","Unterwäsche","内衣","Bielizna"]
-  ],
-  shoes:[
-    ["sneakers","Кросівки","Кроссовки","Sneakers","Красоўкі","Sneaker","运动鞋","Sneakersy"],
-    ["boots","Черевики","Ботинки","Boots","Чаравікі","Stiefel","靴子","Buty"],
-    ["sandals","Босоніжки","Босоножки","Sandals","Басаножкі","Sandalen","凉鞋","Sandały"],
-    ["slippers","Капці","Тапочки","Slippers","Тапачкі","Hausschuhe","拖鞋","Kapcie"],
-    ["loafers","Лофери","Лоферы","Loafers","Лоферы","Loafer","乐福鞋","Mokasyny"],
-    ["shoes_classic","Туфлі","Туфли","Shoes","Туфлі","Schuhe","皮鞋","Półbuty"]
-  ],
-  accessories:[
-    ["bags","Сумки","Сумки","Bags","Сумкі","Taschen","包","Torby"],
-    ["backpacks","Рюкзаки","Рюкзаки","Backpacks","Заплечнікі","Rucksäcke","背包","Plecaki"],
-    ["caps","Кепки","Кепки","Caps","Кепкі","Caps","帽子","Czapki"],
-    ["belts","Ремені","Ремни","Belts","Рамяні","Gürtel","腰带","Paski"],
-    ["glasses","Окуляри","Очки","Glasses","Акуляры","Brillen","眼镜","Okulary"],
-    ["wallets","Гаманці","Кошельки","Wallets","Кашалькі","Geldbörsen","钱包","Portfele"]
-  ]
-};
-const SUB_LANG={uk:1,ru:2,en:3,be:4,de:5,zh:6,pl:7};
-function subcatLabel(value){
-  const lang=(document.getElementById("lang")||{}).value||"uk";
-  const idx=SUB_LANG[lang]||1;
-  for(const group of Object.values(SUBCATEGORIES)){
-    const row=group.find(x=>x[0]===value);
-    if(row)return row[idx]||row[1];
-  }
-  return value||"—";
-}
-function updateSubcategories(preferred=""){
-  const cat=document.getElementById("category");
-  const sel=document.getElementById("subcategory");
-  if(!cat||!sel)return;
-  const current=preferred||sel.value;
-  const idx=SUB_LANG[(document.getElementById("lang")||{}).value]||1;
-  const rows=SUBCATEGORIES[cat.value]||[];
-  sel.replaceChildren();
-  rows.forEach(row=>{
-    const o=document.createElement("option");
-    o.value=row[0];o.textContent=row[idx]||row[1];
-    sel.appendChild(o);
-  });
-  if(rows.some(r=>r[0]===current))sel.value=current;
-  updateSubExample();
-}
-function updateSubExample(){
-  const el=document.getElementById("subcatExample");
-  const cat=document.getElementById("category");
-  const sel=document.getElementById("subcategory");
-  if(!el||!cat||!sel)return;
-  const lang=(document.getElementById("lang")||{}).value||"uk";
-  const examples={
-    uk:"Наприклад",ru:"Например",en:"Example",be:"Напрыклад",
-    de:"Beispiel",zh:"例如",pl:"Przykład"
-  };
-  const catNames={
-    uk:{clothes:"Одяг",shoes:"Взуття",accessories:"Аксесуари"},
-    ru:{clothes:"Одежда",shoes:"Обувь",accessories:"Аксессуары"},
-    en:{clothes:"Clothing",shoes:"Footwear",accessories:"Accessories"},
-    be:{clothes:"Адзенне",shoes:"Абутак",accessories:"Аксэсуары"},
-    de:{clothes:"Kleidung",shoes:"Schuhe",accessories:"Accessoires"},
-    zh:{clothes:"服装",shoes:"鞋履",accessories:"配饰"},
-    pl:{clothes:"Odzież",shoes:"Obuwie",accessories:"Akcesoria"}
-  };
-  el.textContent=`${examples[lang]||examples.uk}: ${(catNames[lang]||catNames.uk)[cat.value]} → ${subcatLabel(sel.value)}`;
-}
-function updateExamplesLanguage(){
-  const lang=(document.getElementById("lang")||{}).value||"uk";
-  const title={
-    uk:"Наприклад: Кросівки Air Jordan",ru:"Например: Кроссовки Air Jordan",en:"Example: Air Jordan sneakers",
-    be:"Напрыклад: Красоўкі Air Jordan",de:"Beispiel: Air Jordan Sneaker",zh:"例如：Air Jordan 运动鞋",pl:"Przykład: Sneakersy Air Jordan"
-  };
-  const sku={
-    uk:"Наприклад: DK96-8",ru:"Например: DK96-8",en:"Example: DK96-8",
-    be:"Напрыклад: DK96-8",de:"Beispiel: DK96-8",zh:"例如：DK96-8",pl:"Przykład: DK96-8"
-  };
-  document.getElementById("titleExample").textContent=title[lang]||title.uk;
-  document.getElementById("skuExample").textContent=sku[lang]||sku.uk;
-  const label={uk:"Підкатегорія *",ru:"Подкатегория *",en:"Subcategory *",be:"Падкатэгорыя *",de:"Unterkategorie *",zh:"子分类 *",pl:"Podkategoria *"};
-  document.getElementById("lSubcat").textContent=label[lang]||label.uk;
-  const keep=document.getElementById("subcategory").value;
-  updateSubcategories(keep);
-}
-document.addEventListener("DOMContentLoaded",()=>{
-  updateSubcategories();
-  updateExamplesLanguage();
-  document.getElementById("subcategory")?.addEventListener("change",updateSubExample);
-  document.getElementById("lang")?.addEventListener("change",updateExamplesLanguage);
-});
-</script>
 
 <script>
 const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
@@ -628,7 +508,47 @@ const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
     style:"currency",currency:usd?"USD":"UAH",maximumFractionDigits:usd?2:0
   }).format(usd?n/UAH_PER_USD:n)
 }
- function sizesUI(selected=[]){
+ 
+const SUBCATEGORIES={
+  clothes:[
+    ["hoodies","Худі"],["sweatshirts","Світшоти"],["sweaters","Кофти"],
+    ["tshirts","Футболки"],["shirts","Сорочки"],["pants","Штани"],
+    ["jeans","Джинси"],["shorts","Шорти"],["jackets","Куртки"],
+    ["coats","Пальта"],["dresses","Сукні"],["skirts","Спідниці"],["underwear","Білизна"]
+  ],
+  shoes:[
+    ["sneakers","Кросівки"],["boots","Черевики"],["sandals","Босоніжки"],
+    ["slippers","Капці"],["loafers","Лофери"],["shoes_classic","Туфлі"]
+  ],
+  accessories:[
+    ["bags","Сумки"],["backpacks","Рюкзаки"],["caps","Кепки"],
+    ["belts","Ремені"],["glasses","Окуляри"],["wallets","Гаманці"]
+  ]
+};
+
+function subcategoryUI(selected=null){
+  const select=$("subcategory");
+  if(!select)return;
+  const category=$("category").value;
+  const rows=SUBCATEGORIES[category]||[];
+  select.replaceChildren();
+  rows.forEach(([value,label])=>{
+    const o=document.createElement("option");
+    o.value=value;
+    o.textContent=label;
+    select.appendChild(o);
+  });
+
+  // Important: only select the product's saved subcategory if it belongs
+  // to the current category. Otherwise use that category's first valid option.
+  if(selected && rows.some(([value])=>value===selected)){
+    select.value=selected;
+  }else if(rows.length){
+    select.value=rows[0][0];
+  }
+}
+
+function sizesUI(selected=[]){
   let box=$("sizes"),
   arr=$("category").value==="shoes"?SHOES:$("category").value==="accessories"?[]:CLOTHES;
   box.replaceChildren();
@@ -712,7 +632,7 @@ const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
     return
   }
   a.forEach(p=>{
-    let item=document.createElement("div");item.className="item",info=document.createElement("div");info.className="info";let img=document.createElement("img");img.className="thumb";img.src=p.image_url||"";img.alt="";img.onerror=()=>img.style.visibility="hidden";let txt=document.createElement("div"),name=document.createElement("div");name.className="name";name.textContent=p.title||"—";let meta=document.createElement("div");meta.className="meta";meta.textContent=`${p.sku||"—"} · ${catName(p.category)}${p.subcategory?" → "+subcatLabel(p.subcategory):""} · ${p.brand||"—"} · ${fmtPrice(p.price)} · ${Array.isArray(p.sizes)?p.sizes.join(", "):"—"}`;txt.append(name,meta);info.append(img,txt);let acts=document.createElement("div");acts.className="item-actions";let e=document.createElement("button");e.className="btn ok";e.textContent=t.editBtn;e.onclick=()=>startEdit(p.id);let d=document.createElement("button");d.className="btn danger";d.textContent=t.del;d.onclick=()=>removeProduct(p.id);acts.append(e,d);item.append(info,acts);$("list").append(item)
+    let item=document.createElement("div");item.className="item",info=document.createElement("div");info.className="info";let img=document.createElement("img");img.className="thumb";img.src=p.image_url||"";img.alt="";img.onerror=()=>img.style.visibility="hidden";let txt=document.createElement("div"),name=document.createElement("div");name.className="name";name.textContent=p.title||"—";let meta=document.createElement("div");meta.className="meta";meta.textContent=`${p.sku||"—"} · ${catName(p.category)} · ${p.brand||"—"} · ${fmtPrice(p.price)} · ${Array.isArray(p.sizes)?p.sizes.join(", "):"—"}`;txt.append(name,meta);info.append(img,txt);let acts=document.createElement("div");acts.className="item-actions";let e=document.createElement("button");e.className="btn ok";e.textContent=t.editBtn;e.onclick=()=>startEdit(p.id);let d=document.createElement("button");d.className="btn danger";d.textContent=t.del;d.onclick=()=>removeProduct(p.id);acts.append(e,d);item.append(info,acts);$("list").append(item)
   })
 }
  function startEdit(id){
@@ -723,6 +643,7 @@ const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
   $("title").value=p.title||"";
   $("sku").value=p.sku||"";
   $("category").value=p.category||"clothes";
+  subcategoryUI(p.subcategory||null);
   $("brand").value=p.brand||"";
   $("price").value=p.price||"";
   $("tg").value=p.tg_link||"";
@@ -739,6 +660,7 @@ const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
   editingImage=null;
   $("productForm").reset();
   $("category").value="clothes";
+  subcategoryUI();
   sizesUI();
   $("cancelBtn").classList.add("hidden");
   applyText()
@@ -782,7 +704,8 @@ const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
   if(String(editingId)===String(id))cancelEdit();
   await load()
 }
- $("category").onchange=()=>{sizesUI();updateSubcategories();};
+ subcategoryUI();
+$("category").onchange=()=>{subcategoryUI();sizesUI();};
 $("cancelBtn").onclick=cancelEdit;
 $("search").oninput=render;
 $("catFilter").onchange=render;
