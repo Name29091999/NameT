@@ -1,2309 +1,856 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="dark light">
-  <title>NameT — Інтернет-магазин</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --text-color: #f8fafc;
-      --text-muted: #94a3b8;
-      --accent-color: #38bdf8;
-      --border-color: #334155;
-      --success-color: #22c55e;
-      --danger-color: #ef4444;
-    }
-
-    body.light-theme {
-      --bg-color: #f8fafc;
-      --card-bg: #ffffff;
-      --text-color: #0f172a;
-      --text-muted: #64748b;
-      --accent-color: #0284c7;
-      --border-color: #e2e8f0;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      transition: background-color .25s, color .25s;
-    }
-
-    body.modal-open { overflow: hidden; }
-
-    header {
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
-      border-bottom: 1px solid var(--border-color);
-      background-color: var(--card-bg);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 22px;
-      color: var(--accent-color);
-    }
-
-    .header-btns {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .btn-action {
-      background-color: var(--card-bg);
-      color: var(--text-color);
-      border: 1px solid var(--border-color);
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .btn-action:hover { background-color: var(--border-color); }
-
-    .container {
-      max-width: 1200px;
-      margin: 25px auto;
-      padding: 0 20px;
-    }
-
-    .search-bar {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 25px;
-    }
-
-    input, select {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      color: var(--text-color);
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 14px;
-      outline: none;
-      width: 100%;
-    }
-
-    input:focus, select:focus { border-color: var(--accent-color); }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .product-image, .image-placeholder {
-      width: 100%;
-      height: 260px;
-      object-fit: cover;
-      background-color: #0b1120;
-    }
-
-    .image-placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-      font-size: 42px;
-    }
-
-    .card-body {
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-    }
-
-    .card-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin: 0 0 6px;
-      overflow-wrap: anywhere;
-    }
-
-    .card-sku {
-      color: var(--text-muted);
-      font-size: 12px;
-      margin-bottom: 7px;
-      overflow-wrap: anywhere;
-    }
-
-    .card-meta {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-      line-height: 1.5;
-    }
-
-    .card-price {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--accent-color);
-      margin-bottom: 12px;
-    }
-
-    .sizes-list {
-      display: flex;
-      gap: 5px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-
-    .size-tag {
-      background-color: var(--border-color);
-      font-size: 11px;
-      padding: 3px 7px;
-      border-radius: 4px;
-    }
-
-    .btn-buy {
-      margin-top: auto;
-      background-color: var(--accent-color);
-      color: #000;
-      text-decoration: none;
-      text-align: center;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: 700;
-      border: 1px solid transparent;
-      cursor: pointer;
-      display: block;
-    }
-
-    .btn-buy.disabled {
-      opacity: .55;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      padding: 18px;
-      background: rgba(0,0,0,.7);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .modal.open { display: flex; }
-
-    .modal-content {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      padding: 25px;
-      border-radius: 12px;
-      width: 100%;
-      max-width: 420px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      max-height: 85vh;
-      overflow-y: auto;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 18px;
-      font-weight: 700;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 10px;
-    }
-
-    .close-btn {
-      cursor: pointer;
-      font-size: 26px;
-      line-height: 1;
-      color: var(--text-muted);
-      background: none;
-      border: 0;
-    }
-
-    .filter-section {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding-bottom: 12px;
-      border-bottom: 1px dashed var(--border-color);
-    }
-
-    .filter-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--accent-color);
-    }
-
-    .price-inputs { display: flex; gap: 10px; }
-
-    .size-column-container {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 150px;
-      overflow-y: auto;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 8px 12px;
-      background-color: rgba(0,0,0,.15);
-    }
-
-    .size-column-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .size-column-item input[type="checkbox"] {
-      width: auto;
-      cursor: pointer;
-    }
-
-    .setting-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .filter-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 5px;
-    }
-
-    .filter-action {
-      background: transparent;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 10px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .filter-apply { color: var(--success-color); }
-    .filter-reset { color: var(--danger-color); }
-    .filter-apply:hover { border-color: var(--success-color); }
-    .filter-reset:hover { border-color: var(--danger-color); }
-
-    .empty-msg {
-      text-align: center;
-      color: var(--text-muted);
-      grid-column: 1 / -1;
-      padding: 40px;
-    }
-
-    .retry-btn {
-      margin-top: 12px;
-      width: auto;
-      color: var(--text-color);
-      cursor: pointer;
-    }
-
-    @media (max-width: 650px) {
-      header {
-        padding: 14px 16px;
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .header-btns { width: 100%; }
-      .header-btns .btn-action { flex: 1; justify-content: center; }
-      .container { padding: 0 14px; margin-top: 18px; }
-      .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-      .modal { padding: 10px; }
-      .modal-content { padding: 18px; }
-    }
-  
-/* ===== NameT redesign ===== */
-:root{--header-bg:#080808;--header-text:#fff}
-html{scroll-behavior:smooth}
-body{transition:background-color .35s,color .35s}
-header{height:64px;padding:0 24px;position:sticky;top:35px;z-index:100;background:color-mix(in srgb,var(--card-bg) 94%,transparent);backdrop-filter:blur(12px)}
-header h1{font-size:21px;font-weight:850;letter-spacing:1.2px;color:var(--text-color)}
-.header-btns{margin-right:auto;order:-1}
-#btnSettings{display:none}
-#btnFilters{position:fixed;right:24px;top:54px;z-index:101}
-.marquee-container{height:35px;background:#080808;color:#fff;overflow:hidden;white-space:nowrap;display:flex;align-items:center;font-weight:800;letter-spacing:2px;font-size:13px;position:sticky;top:0;z-index:102}
-.marquee-track{display:inline-block;min-width:max-content;animation:nametMarquee 18s linear infinite}
-@keyframes nametMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.hero-section{position:relative;width:100%;height:clamp(390px,58vh,680px);overflow:hidden;display:flex;align-items:center;justify-content:center;background:#111}
-.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 38%;filter:brightness(.62);animation:heroIn 1.1s ease both}
-.hero-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.18) 50%,rgba(0,0,0,.55))}
-.hero-title{position:relative;z-index:2;margin:0;padding:20px;text-align:center;font-size:clamp(34px,5vw,68px);font-weight:950;text-transform:uppercase;letter-spacing:3px;color:#fff;text-shadow:0 5px 25px rgba(0,0,0,.55);animation:titleIn .9s .15s ease both}
-@keyframes heroIn{from{opacity:0;transform:scale(1.06)}to{opacity:1;transform:scale(1)}}@keyframes titleIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-.container{max-width:1240px}
-.search-bar{max-width:1200px;margin:24px auto;padding:0 15px}
-.grid{grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:22px}
-.card{transition:transform .25s,box-shadow .25s;animation:cardIn .45s ease both}.card:hover{transform:translateY(-5px);box-shadow:0 15px 35px rgba(0,0,0,.18)}
-@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.product-image,.image-placeholder{height:300px;object-position:center}
-.settings-drawer{position:fixed;top:0;left:0;width:min(330px,88vw);height:100dvh;background:var(--card-bg);border-right:1px solid var(--border-color);box-shadow:10px 0 35px rgba(0,0,0,.3);z-index:1200;padding:22px;transform:translateX(-105%);transition:transform .34s cubic-bezier(.2,.8,.2,1)}
-.settings-drawer.open{transform:translateX(0)}.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.48);opacity:0;pointer-events:none;transition:.3s;z-index:1199}.drawer-overlay.open{opacity:1;pointer-events:auto}
-.drawer-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;font-size:20px;font-weight:800}.close-drawer{border:0;background:none;color:var(--text-color);font-size:28px;cursor:pointer}
-.menu-btn{border:0;background:transparent;color:var(--text-color);font-size:25px;cursor:pointer;padding:7px 10px;border-radius:8px}.menu-btn:hover{background:var(--border-color)}
-@media(min-width:1000px){.hero-section{height:min(650px,64vh)}.hero-img{object-position:center 36%}.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(max-width:650px){header{top:35px;height:auto}.hero-section{height:430px}.hero-img{object-position:center}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.product-image,.image-placeholder{height:210px}#btnFilters{right:14px;top:49px}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-
-</style>
-
-<style id="namet-v2-fixes">
-/* NameT v2 — desktop hero, left header, search+filter alignment */
-header{
-  position:relative !important;
-  top:auto !important;
-  height:64px !important;
-  padding:0 24px !important;
-  display:flex !important;
-  justify-content:flex-start !important;
-  align-items:center !important;
-}
-header h1{
-  display:flex !important;
-  align-items:center !important;
-  gap:14px !important;
-  margin:0 !important;
-}
-.header-btns{display:none !important}
-
-/* Filter button returns to the search row */
-#btnFilters{
-  position:static !important;
-  right:auto !important;
-  top:auto !important;
-  z-index:auto !important;
-  flex:0 0 auto !important;
-  min-width:125px;
-  height:auto;
-  padding:0 20px;
-}
-.search-bar{
-  display:flex !important;
-  flex-direction:row !important;
-  align-items:stretch !important;
-  gap:10px !important;
-}
-.search-bar #searchInput{flex:1 1 auto;min-width:0}
-
-/* Desktop hero: show the complete portrait photo instead of cropping it.
-   A blurred copy fills the unused wide-screen space. */
-.hero-section{
-  height:min(72vh,760px) !important;
-  min-height:560px;
-  background-image:
-    linear-gradient(rgba(0,0,0,.32),rgba(0,0,0,.32)),
-    url("https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=2400&q=88");
-  background-position:center;
-  background-size:cover;
-}
-.hero-section::before{
-  content:"";
-  position:absolute;
-  inset:-28px;
-  background:inherit;
-  background-size:cover;
-  background-position:center;
-  filter:blur(20px);
-  transform:scale(1.05);
-  opacity:.68;
-}
-.hero-img{
-  inset:0 !important;
-  width:100% !important;
-  height:100% !important;
-  object-fit:contain !important;
-  object-position:center center !important;
-  filter:brightness(.70) !important;
-  transform:none !important;
-  z-index:1;
-}
-.hero-shade{z-index:2}
-.hero-title{
-  z-index:3 !important;
-  background:linear-gradient(90deg,#fff,#8d8d8d,#111,#fff,#777,#fff);
-  background-size:300% auto;
-  -webkit-background-clip:text;
-  background-clip:text;
-  -webkit-text-fill-color:transparent;
-  color:transparent;
-  animation:titleIn .9s .15s ease both,shineGradient 4s linear infinite !important;
-  text-shadow:none !important;
-}
-@keyframes shineGradient{
-  0%{background-position:0% center}
-  100%{background-position:300% center}
-}
-
-/* Header is deliberately NOT sticky: it scrolls away with the page. */
-.navbar,header{position:relative !important}
-
-/* Mobile keeps the original crop-friendly behaviour. */
-@media(max-width:700px){
-  header{height:58px !important;padding:0 14px !important}
-  .hero-section{height:430px !important;min-height:0;background-image:none}
-  .hero-section::before{display:none}
-  .hero-img{object-fit:cover !important;object-position:center !important}
-  .search-bar{flex-direction:row !important;padding:0 14px}
-  #btnFilters{min-width:auto;padding:0 14px}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0f172a;--panel:#1e293b;--text:#f8fafc;--muted:#94a3b8;--border:#334155;--accent:#38bdf8;--ok:#22c55e;--danger:#ef4444}
+body.light{--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--accent:#0284c7}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+header{padding:15px 24px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;align-items:center}
+h1,h2{margin:0}
+h1{font-size:22px;color:var(--accent)}
+.wrap{max-width:1200px;margin:24px auto;padding:0 16px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.wide{grid-column:1/-1}
+label{font-size:13px;color:var(--muted)}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);outline:none}
+input:focus,select:focus{border-color:var(--accent)}
+.actions,.toolbar{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border:1px solid var(--border);border-radius:8px;padding:10px 14px;background:transparent;color:var(--text);font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:#001018;border-color:transparent}
+.danger{color:var(--danger)}
+.ok{color:var(--ok)}
+.sizes{display:flex;gap:7px;flex-wrap:wrap}
+.size{border:1px solid var(--border);border-radius:7px;padding:6px 9px;cursor:pointer}
+.size input{width:auto}
+.size:has(input:checked){border-color:var(--accent);color:var(--accent)}
+.toolbar{margin:14px 0}
+.toolbar input{flex:1;min-width:220px}
+.toolbar select{width:auto}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.info{display:flex;gap:12px;align-items:center;min-width:0}
+.thumb{width:64px;height:64px;object-fit:cover;border-radius:8px;background:var(--bg)}
+.name{font-weight:700;overflow-wrap:anywhere}
+.meta{font-size:12px;color:var(--muted);margin-top:4px}
+.item-actions{display:flex;gap:7px}
+.count{color:var(--muted);font-size:13px}
+.status{padding:12px;text-align:center;color:var(--muted)}
+.settings{display:flex;gap:8px;align-items:center}
+.settings select{width:auto}
+.hidden{display:none!important}
+@media(max-width:700px){header{align-items:flex-start;flex-direction:column}
+.grid2{grid-template-columns:1fr}
+.wide{grid-column:auto}
+.item{align-items:flex-start;flex-direction:column}
+.item-actions{width:100%}
+.item-actions .btn{flex:1}
+.toolbar select{width:100%}
 }
 </style>
 
-
-<style id="namet-v3-fixes">
-/* Dark theme: neutral near-black, without blue tint */
+<style id="namet-admin-redesign-v1">
 :root{
-  --bg-color:#0f0f0f !important;
-  --card-bg:#181818 !important;
-  --text-color:#f1f1f1 !important;
-  --text-muted:#aaaaaa !important;
-  --border-color:#303030 !important;
+  --bg:#0f0f0f;--panel:#181818;--panel2:#121212;--text:#f1f1f1;--muted:#a7a7a7;
+  --border:#303030;--accent:#f1f1f1;--accentText:#0d0d0d;--ok:#2bb34a;--danger:#ef5350;
+  --shadow:0 18px 55px rgba(0,0,0,.22)
 }
-body:not(.light-theme):not(.grey-theme){background:#0f0f0f !important;color:#f1f1f1 !important}
+body.light{--bg:#f4f4f4;--panel:#fff;--panel2:#f8f8f8;--text:#111;--muted:#6f6f6f;--border:#dedede;--accent:#111;--accentText:#fff;--shadow:0 18px 55px rgba(0,0,0,.08)}
+body.grey{--bg:#262626;--panel:#333;--panel2:#2b2b2b;--text:#f3f3f3;--muted:#bdbdbd;--border:#4a4a4a;--accent:#f1f1f1;--accentText:#111;--shadow:0 18px 55px rgba(0,0,0,.18)}
+html{scroll-behavior:smooth}
+body{background:var(--bg);transition:background .28s ease,color .28s ease}
+.namet-admin-header{
+  position:relative!important;z-index:20;padding:0 24px!important;height:72px;background:var(--panel)!important;
+  border-bottom:1px solid var(--border)!important;display:flex!important;justify-content:flex-start!important;
+  align-items:center!important;gap:18px!important;transition:.28s ease
+}
+.menu-btn{width:38px;height:38px;border:0;background:transparent;display:flex;flex-direction:column;justify-content:center;gap:5px;cursor:pointer;padding:7px;border-radius:10px;transition:.2s ease}
+.menu-btn:hover{background:var(--panel2);transform:scale(1.04)}
+.menu-btn span{display:block;width:23px;height:2px;background:var(--text);border-radius:9px;transition:.25s ease}
+.admin-brand{display:flex;align-items:baseline;gap:13px;letter-spacing:.02em}
+.admin-brand strong{font-size:24px;letter-spacing:.12em;background:linear-gradient(90deg,#fff,#888,#fff);background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:adminShine 5s linear infinite}
+body.light .admin-brand strong{background:linear-gradient(90deg,#111,#888,#111);background-size:220% auto;-webkit-background-clip:text;background-clip:text}
+.admin-brand #headTitle{font-size:14px;color:var(--muted);font-weight:650}
+@keyframes adminShine{to{background-position:220% center}}
 
-/* New grey theme */
-body.grey-theme{
-  --bg-color:#262626 !important;
-  --card-bg:#333333 !important;
-  --text-color:#f3f3f3 !important;
-  --text-muted:#bdbdbd !important;
-  --border-color:#4a4a4a !important;
-  background:#262626 !important;color:#f3f3f3 !important;
-}
+.drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.48);opacity:0;visibility:hidden;transition:.28s ease;z-index:90;backdrop-filter:blur(2px)}
+.settings-drawer{position:fixed;z-index:100;left:0;top:0;height:100vh;width:min(390px,88vw);background:var(--panel);border-right:1px solid var(--border);box-shadow:var(--shadow);transform:translateX(-105%);transition:transform .34s cubic-bezier(.2,.8,.2,1),background .28s ease;padding:22px}
+body.drawer-open .drawer-backdrop{opacity:1;visibility:visible}
+body.drawer-open .settings-drawer{transform:translateX(0)}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.drawer-head>div{display:flex;flex-direction:column;gap:5px}.drawer-head strong{font-size:24px;letter-spacing:.1em}.drawer-head span{color:var(--muted);font-size:13px}
+.drawer-close{width:38px;height:38px;border:1px solid var(--border);border-radius:50%;background:transparent;color:var(--text);font-size:25px;cursor:pointer;transition:.2s}
+.drawer-close:hover{transform:rotate(90deg);background:var(--panel2)}
+.drawer-body.settings{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:22px!important;padding-top:24px}
+.drawer-field{display:flex;flex-direction:column;gap:9px;color:var(--muted);font-size:13px;font-weight:650}
+.drawer-field select{width:100%!important;background:var(--panel2);padding:13px 14px}
 
-/* Settings spacing */
-#drawerSettingsHost{display:flex;flex-direction:column;gap:18px}
-#drawerSettingsHost .setting-item{margin:0 !important;gap:9px !important}
-#drawerSettingsHost select{margin-top:3px}
-.settings-drawer{background:var(--card-bg) !important}
+.wrap{max-width:1120px!important;margin:34px auto!important;padding:0 20px!important}
+.panel{background:var(--panel)!important;border:1px solid var(--border)!important;border-radius:18px!important;padding:28px!important;margin-bottom:24px!important;box-shadow:0 1px 0 rgba(255,255,255,.015);transition:background .28s ease,border .28s ease,transform .25s ease}
+.section-kicker{font-size:10px;letter-spacing:.22em;color:var(--muted);margin-bottom:8px}
+h2{font-size:23px;letter-spacing:-.02em}
+.grid2{gap:18px!important}
+.field{gap:8px!important}
+label{font-size:13px!important;font-weight:650;color:var(--muted)!important}
+input,select{background:var(--panel2)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:11px!important;padding:13px 14px!important;transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease,background .28s ease}
+input:hover,select:hover{border-color:color-mix(in srgb,var(--border),var(--text) 20%)!important}
+input:focus,select:focus{border-color:var(--text)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--text) 9%,transparent)!important}
+input[type=file]{padding:10px!important}
+.btn{border-radius:11px!important;padding:12px 16px!important;transition:transform .18s ease,background .18s ease,border-color .18s ease,opacity .18s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0) scale(.985)}
+.primary{background:var(--text)!important;color:var(--bg)!important;border-color:var(--text)!important}
+.primary:hover{opacity:.88}
+.actions .primary{min-width:220px}
+.danger{color:#ff6666!important}.ok{color:#66d47b!important}
 
-/* Search + filter always together */
-.search-bar{display:flex !important;flex-direction:row !important;gap:10px !important;align-items:stretch !important}
-#btnFilters{
- display:block !important;visibility:visible !important;opacity:1 !important;
- position:static !important;flex:0 0 auto !important;min-width:130px !important;
- padding:0 20px !important;
-}
+/* Full tile selection: checkbox exists for functionality, but no checkbox mark is shown. */
+.sizes{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:10px!important}
+.size{position:relative;display:flex;align-items:center;justify-content:center;min-height:46px;border:1px solid var(--border)!important;border-radius:11px!important;padding:10px 12px!important;background:var(--panel2);color:var(--text);font-weight:750;cursor:pointer;user-select:none;transition:.18s ease}
+.size:hover{transform:translateY(-2px);border-color:var(--muted)!important}
+.size input{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important}
+.size:has(input:checked){background:var(--text)!important;border-color:var(--text)!important;color:var(--bg)!important;box-shadow:0 7px 22px rgba(0,0,0,.15);transform:translateY(-1px)}
 
-/* Truly seamless ticker: two identical groups move by exactly one group width */
-.marquee-container{overflow:hidden !important}
-.marquee-track{display:flex !important;width:max-content !important;animation:none !important}
-.marquee-group{display:flex;flex-shrink:0;align-items:center}
-.marquee-word{display:inline-block;padding-right:42px;white-space:nowrap}
-.marquee-track.seamless{animation:nametSeamless 18s linear infinite !important}
-@keyframes nametSeamless{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.toolbar{gap:10px!important;margin:18px 0!important}
+.toolbar input,.toolbar select{min-height:46px}
+.item{background:var(--panel2);border-radius:14px!important;padding:14px!important;transition:.2s ease}
+.item:hover{transform:translateY(-2px);border-color:var(--muted)!important}
+.thumb{width:70px!important;height:70px!important;border-radius:11px!important}
+.name{font-size:15px}.meta{line-height:1.55!important}
+.status{padding:26px!important}
+.count{color:var(--muted)!important}
 
-@media(max-width:650px){
- .search-bar{flex-direction:row !important}
- #btnFilters{min-width:auto !important;padding:0 13px !important}
-}
-</style>
-
-
-<style id="namet-subcategory-native-v13">
-.card-subcategory{
-  margin-top:3px;
-  display:block;
-  line-height:1.35;
-  white-space:nowrap;
-}
-.card-subcategory-label{
-  color:var(--text-muted);
-  font-size:12px;
-  font-weight:500;
-  letter-spacing:0;
-  opacity:.72;
-}
-.card-subcategory-label::after{content:": "}
-.card-subcategory-value{
-  color:var(--text-color);
-  font-size:12px;
-  font-weight:600;
-}
-</style>
-
-
-<style id="namet-card-meta-v15">
-.card .meta{
-  display:flex;
-  flex-direction:column;
-  gap:3px;
-  margin-top:8px;
-}
-.card-meta-field{
-  display:block;
-  line-height:1.35;
-  white-space:nowrap;
-}
-.card-meta-label{
-  color:var(--text-muted);
-  font-size:12px;
-  font-weight:500;
-  letter-spacing:0;
-  opacity:.72;
-}
-.card-meta-label::after{content:": "}
-.card-meta-value{
-  color:var(--text-color);
-  font-size:12px;
-  font-weight:600;
-}
-</style>
-
-
-<style id="namet-card-spacing-v17">
-/* SKU and metadata should read as one compact information block */
-.card .sku{
-  margin-bottom:0 !important;
-  color:var(--text-color) !important;
-  opacity:1 !important;
-}
-.card .meta{
-  margin-top:0 !important;
-  gap:0 !important;
-}
-.card-subcategory{
-  margin-top:0 !important;
-}
-
-/* Keep the labels muted, but the actual SKU/value fully visible */
-.card .sku,
-.card .sku *{
-  opacity:1 !important;
-}
-</style>
-
-
-<style id="namet-card-spacing-v18">
-/* Correct selectors: real elements are .card-sku and .card-meta */
-.card-sku{
-  margin-bottom:0 !important;
-  opacity:1 !important;
-  color:var(--text-color) !important;
-}
-.card-meta{
-  margin-top:0 !important;
-  margin-bottom:0 !important;
-  gap:0 !important;
-}
-.card-meta-field{
-  margin:0 !important;
-}
-.card-subcategory{
-  margin-top:0 !important;
-  margin-bottom:0 !important;
-}
-
-/* SKU label muted, SKU value white — same visual logic as other fields */
-.card-sku-label{
-  color:var(--text-muted);
-  opacity:.72;
-}
-.card-sku-value{
-  color:var(--text-color);
-  opacity:1;
-  font-weight:500;
-}
-</style>
-
-
-<style id="namet-filter-redesign-v19">
-/* ===== Filter modal polish ===== */
-.filter-modal-content,.modal-content{
-  transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .22s ease,background .25s ease;
-}
-
-/* Animated top X, compatible with common existing close classes/IDs */
-#btnCloseFilters,.filter-close,.close-filter,.close{
-  transition:transform .25s cubic-bezier(.2,.8,.2,1),background .2s ease,border-color .2s ease,opacity .2s ease !important;
-}
-#btnCloseFilters:hover,.filter-close:hover,.close-filter:hover,.close:hover{
-  transform:rotate(90deg) scale(1.08) !important;
-}
-#btnCloseFilters:active,.filter-close:active,.close-filter:active,.close:active{
-  transform:rotate(90deg) scale(.94) !important;
-}
-
-/* Sizes: no visible browser checkboxes; whole tile is the control */
-#sizeOptions,.size-options,.sizes-filter,.filter-sizes{
-  display:grid !important;
-  grid-template-columns:repeat(auto-fill,minmax(68px,1fr)) !important;
-  gap:8px !important;
-  max-height:210px;
-  overflow:auto;
-  padding:5px 5px 5px 1px;
-  scrollbar-width:thin;
-}
-#sizeOptions label,.size-options label,.sizes-filter label,.filter-sizes label{
-  position:relative;
-  min-height:42px;
-  display:flex !important;
-  align-items:center;
-  justify-content:center;
-  padding:9px 10px !important;
-  margin:0 !important;
-  border:1px solid var(--border-color,#303030) !important;
-  border-radius:10px !important;
-  background:var(--card-bg,#181818) !important;
-  color:var(--text-color,#f1f1f1) !important;
-  font-size:13px !important;
-  font-weight:650;
-  cursor:pointer;
-  user-select:none;
-  transition:transform .18s ease,border-color .18s ease,background .18s ease,color .18s ease,box-shadow .18s ease !important;
-}
-#sizeOptions label:hover,.size-options label:hover,.sizes-filter label:hover,.filter-sizes label:hover{
-  transform:translateY(-2px);
-  border-color:var(--text-muted,#aaa) !important;
-}
-#sizeOptions label:active,.size-options label:active,.sizes-filter label:active,.filter-sizes label:active{
-  transform:scale(.97);
-}
-#sizeOptions input[type=checkbox],.size-options input[type=checkbox],.sizes-filter input[type=checkbox],.filter-sizes input[type=checkbox]{
-  position:absolute !important;
-  opacity:0 !important;
-  pointer-events:none !important;
-  width:1px !important;height:1px !important;
-}
-#sizeOptions label:has(input:checked),.size-options label:has(input:checked),.sizes-filter label:has(input:checked),.filter-sizes label:has(input:checked){
-  background:var(--text-color,#f1f1f1) !important;
-  color:var(--bg-color,#0f0f0f) !important;
-  border-color:var(--text-color,#f1f1f1) !important;
-  box-shadow:0 7px 20px rgba(0,0,0,.16);
-  transform:translateY(-1px);
-}
-
-/* Bottom close action — deliberately uses the same cyan family as product prices */
-.filter-close-bottom{
-  width:100%;
-  margin-top:12px;
-  padding:12px 16px;
-  border:1px solid rgba(56,189,248,.35);
-  border-radius:10px;
-  background:rgba(56,189,248,.08);
-  color:#38bdf8;
-  font-weight:750;
-  cursor:pointer;
-  transition:background .2s ease,border-color .2s ease,transform .18s ease,box-shadow .2s ease;
-}
-.filter-close-bottom:hover{
-  background:rgba(56,189,248,.14);
-  border-color:#38bdf8;
-  transform:translateY(-1px);
-  box-shadow:0 7px 22px rgba(56,189,248,.08);
-}
-.filter-close-bottom:active{transform:scale(.985)}
-
-@media(max-width:600px){
-  #sizeOptions,.size-options,.sizes-filter,.filter-sizes{
-    grid-template-columns:repeat(4,1fr) !important;
-    max-height:190px;
-  }
-}
-</style>
-
-
-<style id="namet-filter-real-fix-v20">
-/* Sizes — actual filter DOM */
-#sizesColumnList.size-column-container{
-  display:grid !important;
-  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
-  gap:8px !important;
-  max-height:190px !important;
-  overflow-y:auto !important;
-  padding:6px !important;
-  border:0 !important;
-  background:transparent !important;
-}
-#sizesColumnList .size-column-item{
-  position:relative;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  min-height:42px;
-  padding:9px 7px !important;
-  gap:0 !important;
-  margin:0 !important;
-  border:1px solid var(--border-color) !important;
-  border-radius:10px !important;
-  background:color-mix(in srgb,var(--card-bg) 88%,var(--bg-color)) !important;
-  color:var(--text-color) !important;
-  font-size:13px !important;
-  font-weight:700 !important;
-  cursor:pointer;
-  user-select:none;
-  transition:transform .18s ease,background .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease !important;
-}
-#sizesColumnList .size-column-item:hover{
-  transform:translateY(-2px);
-  border-color:var(--text-muted) !important;
-}
-#sizesColumnList .size-column-item:active{transform:scale(.96)}
-#sizesColumnList .size-column-item input{
-  position:absolute !important;
-  opacity:0 !important;
-  width:1px !important;
-  height:1px !important;
-  pointer-events:none !important;
-}
-#sizesColumnList .size-column-item:has(input:checked){
-  background:var(--text-color) !important;
-  color:var(--bg-color) !important;
-  border-color:var(--text-color) !important;
-  transform:translateY(-1px);
-  box-shadow:0 6px 18px rgba(0,0,0,.16);
-}
-
-/* Top X — actual .close-btn */
-#filterModal .close-btn{
-  width:36px;height:36px;
-  display:flex;align-items:center;justify-content:center;
-  border:1px solid transparent !important;
-  border-radius:50%;
-  transition:transform .28s cubic-bezier(.2,.8,.2,1),background .2s ease,border-color .2s ease,color .2s ease !important;
-}
-#filterModal .close-btn:hover{
-  transform:rotate(90deg) scale(1.08);
-  background:color-mix(in srgb,var(--accent-color) 10%,transparent) !important;
-  border-color:color-mix(in srgb,var(--accent-color) 35%,transparent) !important;
-  color:var(--accent-color) !important;
-}
-#filterModal .close-btn:active{transform:rotate(90deg) scale(.92)}
-
-/* Bottom close button */
-#btnCloseFiltersBottom{
-  width:100%;
-  margin-top:0;
-  padding:12px 16px;
-  border:1px solid color-mix(in srgb,var(--accent-color) 45%,transparent);
-  border-radius:9px;
-  background:color-mix(in srgb,var(--accent-color) 9%,transparent);
-  color:var(--accent-color);
-  font-weight:750;
-  cursor:pointer;
-  transition:transform .18s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease;
-}
-#btnCloseFiltersBottom:hover{
-  transform:translateY(-1px);
-  background:color-mix(in srgb,var(--accent-color) 15%,transparent);
-  border-color:var(--accent-color);
-  box-shadow:0 7px 20px color-mix(in srgb,var(--accent-color) 10%,transparent);
-}
-#btnCloseFiltersBottom:active{transform:scale(.985)}
-
-@media(max-width:480px){
-  #sizesColumnList.size-column-container{grid-template-columns:repeat(3,minmax(0,1fr)) !important}
-}
-</style>
-
-
-<style id="namet-filter-action-polish-v21">
-/* Apply / Reset now match the visual language of "Close filters" */
-#btnApplyFilter,
-#btnResetFilter{
-  transition:transform .18s ease,background .2s ease,border-color .2s ease,
-             box-shadow .2s ease,color .2s ease !important;
-}
-
-/* Apply — green glass/tint */
-#btnApplyFilter{
-  background:rgba(34,197,94,.08) !important;
-  border:1px solid rgba(34,197,94,.42) !important;
-  color:#22c55e !important;
-}
-#btnApplyFilter:hover{
-  transform:translateY(-1px);
-  background:rgba(34,197,94,.15) !important;
-  border-color:#22c55e !important;
-  box-shadow:0 7px 20px rgba(34,197,94,.10);
-}
-#btnApplyFilter:active{
-  transform:scale(.985);
-  background:rgba(34,197,94,.19) !important;
-}
-
-/* Reset — red glass/tint */
-#btnResetFilter{
-  background:rgba(239,68,68,.08) !important;
-  border:1px solid rgba(239,68,68,.42) !important;
-  color:#ef4444 !important;
-}
-#btnResetFilter:hover{
-  transform:translateY(-1px);
-  background:rgba(239,68,68,.15) !important;
-  border-color:#ef4444 !important;
-  box-shadow:0 7px 20px rgba(239,68,68,.10);
-}
-#btnResetFilter:active{
-  transform:scale(.985);
-  background:rgba(239,68,68,.19) !important;
-}
-</style>
-
-
-<style id="namet-mobile-header-card-fix-v22">
-/* Remove the remaining Category -> Subcategory gap everywhere */
-.card .card-meta{
-  margin-bottom:0 !important;
-}
-.card .card-meta-field:last-child{
-  margin-bottom:0 !important;
-}
-.card .card-subcategory{
-  margin-top:0 !important;
-  padding-top:0 !important;
-}
-
-/* Phone header: keep hamburger + "Clothing Premium Footwear" together on the left */
-@media (max-width:700px){
-  .main-header,
-  .site-header,
-  header.header{
-    justify-content:flex-start !important;
-    text-align:left !important;
-  }
-
-  /* Actual redesigned header elements */
-  .topbar,
-  .header-inner{
-    justify-content:flex-start !important;
-    text-align:left !important;
-  }
-
-  .menu-toggle,
-  .hamburger,
-  #menuBtn{
-    flex:0 0 auto !important;
-    margin-left:0 !important;
-    margin-right:12px !important;
-  }
-
-  .nav-title,
-  .header-title,
-  .category-title,
-  .brand-nav,
-  .topbar-title{
-    flex:0 1 auto !important;
-    width:auto !important;
-    max-width:calc(100vw - 88px) !important;
-    margin:0 !important;
-    text-align:left !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    font-size:clamp(14px,4vw,18px) !important;
-  }
-}
-</style>
-
-
-<style id="namet-mobile-real-fix-v23">
-/* REAL mobile header: override the old rule that changes header to column */
-@media (max-width:700px){
-  body > header{
-    height:58px !important;
-    min-height:58px !important;
-    padding:0 14px !important;
-    display:flex !important;
-    flex-direction:row !important;
-    align-items:center !important;
-    justify-content:flex-start !important;
-    gap:12px !important;
-    text-align:left !important;
-  }
-
-  body > header #menuBtn{
-    order:0 !important;
-    flex:0 0 auto !important;
-    margin:0 !important;
-  }
-
-  body > header #siteTitle{
-    order:1 !important;
-    display:block !important;
-    flex:0 1 auto !important;
-    width:auto !important;
-    max-width:calc(100vw - 82px) !important;
-    margin:0 !important;
-    padding:0 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    text-align:left !important;
-    font-size:clamp(14px,4vw,18px) !important;
-    line-height:1.1 !important;
-  }
-
-  body > header .header-btns{
-    display:none !important;
-  }
-}
-
-/* Category and subcategory must visually touch as consecutive metadata rows */
-.card-meta{
-  margin-bottom:0 !important;
-  padding-bottom:0 !important;
-}
-.card-meta-field{
-  margin:0 !important;
-  padding:0 !important;
-  line-height:1.35 !important;
-}
-.card-subcategory{
-  margin:-1px 0 0 0 !important;
-  padding:0 !important;
-  line-height:1.35 !important;
-}
-</style>
-
-
-<style id="namet-mobile-photo-and-meta-v24">
-/* Make all four metadata rows one compact block.
-   The negative margin compensates for the old accumulated card spacing rules. */
-.card-meta{
-  margin:0 !important;
-  padding:0 !important;
-  gap:0 !important;
-}
-.card-meta-field{
-  display:block !important;
-  margin:0 !important;
-  padding:0 !important;
-  line-height:1.35 !important;
-}
-.card-subcategory{
-  display:block !important;
-  margin:-7px 0 0 0 !important;
-  padding:0 !important;
-  line-height:1.35 !important;
-}
-
-/* Mobile hero: show the complete portrait instead of cropping its sides/top.
-   A blurred copy fills any unused area, matching the desktop treatment. */
 @media(max-width:700px){
-  .hero-section{
-    height:min(78vh,650px) !important;
-    min-height:510px !important;
-    position:relative !important;
-    overflow:hidden !important;
-    background-image:
-      linear-gradient(rgba(0,0,0,.30),rgba(0,0,0,.30)),
-      url("https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=2400&q=88") !important;
-    background-position:center !important;
-    background-size:cover !important;
-  }
-  .hero-section::before{
-    display:block !important;
-    content:"";
-    position:absolute;
-    inset:-20px;
-    background:inherit;
-    background-position:center !important;
-    background-size:cover !important;
-    filter:blur(16px);
-    transform:scale(1.06);
-    opacity:.64;
-    z-index:0;
-  }
-  .hero-img{
-    position:absolute !important;
-    inset:0 !important;
-    width:100% !important;
-    height:100% !important;
-    object-fit:contain !important;
-    object-position:center center !important;
-    filter:brightness(.70) !important;
-    z-index:1 !important;
-  }
-  .hero-shade{z-index:2 !important}
-  .hero-title{z-index:3 !important}
+ .namet-admin-header{height:64px;padding:0 15px!important;flex-direction:row!important;align-items:center!important}
+ .admin-brand strong{font-size:20px}.admin-brand #headTitle{font-size:12px}
+ .wrap{margin:18px auto!important;padding:0 12px!important}
+ .panel{padding:18px!important;border-radius:15px!important}
+ .sizes{grid-template-columns:repeat(4,1fr)!important}
+ .actions .primary{width:100%;min-width:0}
 }
 </style>
 
 
-<style id="namet-mobile-hero-clean-v25">
-/* Phone only: one clean image, no blurred duplicate.
-   Slight horizontal expansion lets the portrait fill the phone naturally
-   while keeping the subject essentially complete. Desktop is untouched. */
-@media(max-width:700px){
-  .hero-section{
-    background:#0f0f0f !important;
-    background-image:none !important;
-    height:min(78vh,650px) !important;
-    min-height:510px !important;
-    overflow:hidden !important;
-  }
-  .hero-section::before{
-    display:none !important;
-    content:none !important;
-    background:none !important;
-    filter:none !important;
-  }
-  .hero-img{
-    width:106% !important;
-    max-width:none !important;
-    height:100% !important;
-    left:50% !important;
-    right:auto !important;
-    transform:translateX(-50%) !important;
-    object-fit:contain !important;
-    object-position:center center !important;
-  }
+<style id="namet-admin-examples-v4">
+.field-example{
+  margin-top:7px;
+  padding-left:2px;
+  color:var(--muted,#8f8f8f);
+  opacity:.72;
+  font-size:12px;
+  line-height:1.35;
+  font-weight:450;
+  transition:opacity .18s ease,color .18s ease;
 }
-</style>
-
-
-<style id="namet-filter-contrast-v26">
-/* More contrast in every theme, especially the light theme */
-#btnApplyFilter{
-  background:rgba(34,197,94,.16) !important;
-  border-color:rgba(22,163,74,.72) !important;
-  color:#16a34a !important;
-  box-shadow:inset 0 0 0 1px rgba(34,197,94,.06);
+.field:focus-within .field-example{
+  opacity:.92;
 }
-#btnApplyFilter:hover{
-  background:rgba(34,197,94,.24) !important;
-  border-color:#16a34a !important;
-  box-shadow:0 7px 20px rgba(34,197,94,.15);
-}
-
-#btnResetFilter{
-  background:rgba(239,68,68,.15) !important;
-  border-color:rgba(220,38,38,.68) !important;
-  color:#dc2626 !important;
-  box-shadow:inset 0 0 0 1px rgba(239,68,68,.05);
-}
-#btnResetFilter:hover{
-  background:rgba(239,68,68,.23) !important;
-  border-color:#dc2626 !important;
-  box-shadow:0 7px 20px rgba(239,68,68,.14);
-}
-
-/* Dark/grey themes can keep brighter text */
-body:not(.light-theme):not(.light) #btnApplyFilter{color:#2bd65f !important}
-body:not(.light-theme):not(.light) #btnResetFilter{color:#ff5252 !important}
 </style>
 
 </head>
 <body>
-<div class="marquee-container"><div class="marquee-track">NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; NAMET &nbsp;&nbsp;&nbsp;&nbsp; </div></div>
-  <header>
-    <button class="menu-btn" id="menuBtn" type="button">☰</button><h1 id="siteTitle">NameT</h1>
-    <div class="header-btns">
-      
-      <button class="btn-action" id="btnSettings" type="button">⚙️ Налаштування</button>
+<header class="namet-admin-header">
+  <button class="menu-btn" id="menuBtn" type="button" aria-label="Menu"><span></span><span></span><span></span></button>
+  <div class="admin-brand"><strong>NameT</strong><span id="headTitle">Адмін-панель</span></div>
+</header>
+
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="settings-drawer" id="settingsDrawer">
+  <div class="drawer-head">
+    <div><strong>NameT</strong><span id="drawerSettingsTitle">Налаштування</span></div>
+    <button id="drawerClose" class="drawer-close" type="button">×</button>
+  </div>
+  <div class="drawer-body settings">
+    <label class="drawer-field"><span id="drawerLangLabel">Мова</span>
+      <select id="lang"><option value="uk">Українська</option><option value="ru">Русский</option><option value="en">English</option><option value="be">Беларуская</option><option value="de">Deutsch</option><option value="zh">中文</option><option value="pl">Polski</option></select>
+    </label>
+    <label class="drawer-field"><span id="drawerThemeLabel">Тема</span>
+      <select id="theme"><option value="dark">Темна</option><option value="grey">Сіра</option><option value="light">Світла</option></select>
+    </label>
+    <label class="drawer-field"><span id="drawerCurrencyLabel">Валюта</span>
+      <select id="currency"><option value="UAH">UAH ₴</option><option value="USD">USD $</option></select>
+    </label>
+  </div>
+</aside>
+
+<main class="wrap">
+<section class="panel form-panel">
+  <div class="section-kicker">NAMET / ADMIN</div><h2 id="formHeading">Додати товар</h2><br>
+  <form id="productForm">
+    <div class="grid2">
+      <div class="field"><label id="lTitle">Назва *</label><input id="title" required><div class="field-example" id="exampleTitle">Наприклад: Кросівки Air Jordan 1</div></div>
+      <div class="field"><label id="lSku">Артикул</label><input id="sku"><div class="field-example" id="exampleSku">Наприклад: DK96-8</div></div>
+      <div class="field"><label id="lCat">Категорія *</label><select id="category"><option value="clothes">Одяг</option><option value="shoes">Взуття</option><option value="accessories">Аксесуари</option></select><div class="field-example" id="exampleCategory">Наприклад: Одяг</div></div>
+      <div class="field"><label id="lSubcat">Підкатегорія *</label><select id="subcategory"></select><div class="field-example" id="subcategoryExample">Наприклад: Худі</div></div>
+      <div class="field">
+        <label id="lBrand">Бренд *</label>
+        <select id="brand" required>
+          <option value="Nike">Nike</option>
+          <option value="Adidas">Adidas</option>
+          <option value="Puma">Puma</option>
+          <option value="Reebok">Reebok</option>
+          <option value="New Balance">New Balance</option>
+          <option value="Jordan">Jordan</option>
+          <option value="Under Armour">Under Armour</option>
+          <option value="Stone Island">Stone Island</option>
+          <option value="The North Face">The North Face</option>
+          <option value="Tommy Hilfiger">Tommy Hilfiger</option>
+          <option value="Calvin Klein">Calvin Klein</option>
+          <option value="Gucci">Gucci</option>
+          <option value="Balenciaga">Balenciaga</option>
+          <option value="Zara">Zara</option>
+          <option value="Інше">Інше / Другое / Other</option>
+        </select>
+      </div>
+      <div class="field"><label id="lPrice">Ціна (UAH) *</label><input id="price" type="number" min="0" step="0.01" required><div class="field-example" id="examplePrice">Наприклад: 2499</div></div>
+      <div class="field"><label id="lTg">Посилання Telegram *</label><input id="tg" type="url" required placeholder="https://t.me/..."></div>
+      <div class="field wide"><label id="lImage">Нове зображення</label><input id="image" type="file" accept="image/*"><small id="imageHint" class="count"></small></div>
+      <div class="field wide"><label id="lSizes">Розміри</label><div id="sizes" class="sizes"></div></div>
+    </div><br>
+    <div class="actions">
+      <button class="btn primary" id="saveBtn" type="submit">Опублікувати товар</button>
+      <button class="btn danger hidden" id="cancelBtn" type="button">Скасувати редагування</button>
     </div>
-  </header>
-<section class="hero-section">
-<img class="hero-img" src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=2400&q=88" alt="NameT fashion">
-<div class="hero-shade"></div><div class="hero-title">NameT</div>
+  </form>
 </section>
 
-  <div class="drawer-overlay" id="drawerOverlay"></div>
-<aside class="settings-drawer" id="settingsDrawer">
-<div class="drawer-header"><span id="drawerSettingsTitle">Настройки</span><button class="close-drawer" id="closeDrawer" type="button">×</button></div>
-<div id="drawerSettingsHost"></div>
-</aside>
-<main class="container">
-    <div class="search-bar">
-      <input type="search" id="searchInput" autocomplete="off" placeholder="Пошук за назвою або артикулом...">
-<button class="btn-action" id="btnFilters" type="button">🔍 Фільтри</button>
-    </div>
-    <div class="grid" id="productsGrid" aria-live="polite">
-      <div class="empty-msg" id="msgLoading">Завантаження...</div>
-    </div>
-  </main>
-
-  <div class="modal" id="filterModal" role="dialog" aria-modal="true" aria-labelledby="titleFilter">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span id="titleFilter">Фільтри товарів</span>
-        <button class="close-btn" type="button" data-close="filterModal" aria-label="Close">&times;</button>
-      </div>
-
-      <div class="filter-section">
-        <span class="filter-label" id="secCat">Категорія:</span>
-        <select id="categorySelect">
-          <option value="all" id="optAllCat">Усі категорії</option>
-          <option value="clothes" id="optClothes">Одяг</option>
-          <option value="shoes" id="optShoes">Взуття</option>
-          <option value="accessories" id="optAcc">Аксесуари</option>
-        </select>
-      </div>
-      <div class="filter-section">
-        <span class="filter-label" id="secSubcat">Підкатегорія:</span>
-        <select id="subcategorySelect">
-          <option value="all">Усі підкатегорії</option>
-        </select>
-      </div>
-
-      <div class="filter-section">
-        <span class="filter-label" id="lblBrand">Бренд:</span>
-        <select id="brandSelect">
-          <option value="all" id="optAllBrands">Усі бренди</option>
-          <option>Nike</option><option>Adidas</option><option>Puma</option><option>Reebok</option>
-          <option>New Balance</option><option>Jordan</option><option>Under Armour</option>
-          <option>Stone Island</option><option>The North Face</option><option>Tommy Hilfiger</option>
-          <option>Calvin Klein</option><option>Gucci</option><option>Balenciaga</option><option>Zara</option>
-          <option value="Інше" id="optOtherBrand">Інше</option>
-        </select>
-      </div>
-
-      <div class="filter-section">
-        <span class="filter-label" id="secPrice">Ціна:</span>
-        <div class="price-inputs">
-          <input type="number" id="priceFrom" min="0" step="1" placeholder="Від">
-          <input type="number" id="priceTo" min="0" step="1" placeholder="До">
-        </div>
-      </div>
-
-      <div class="filter-section">
-        <span class="filter-label" id="secSize">Розміри:</span>
-        <div class="size-column-container" id="sizesColumnList"></div>
-      </div>
-
-      <div class="filter-section">
-        <span class="filter-label" id="lblSort">Сортування:</span>
-        <select id="sortSelect">
-          <option value="default" id="optNew">Спочатку нові</option>
-          <option value="price_asc" id="optAsc">Від дешевих до дорогих</option>
-          <option value="price_desc" id="optDesc">Від дорогих до дешевих</option>
-        </select>
-      </div>
-
-      <div class="filter-actions">
-        <button class="filter-action filter-apply" id="btnApplyFilter" type="button">✓ Застосувати</button>
-        <button class="filter-action filter-reset" id="btnResetFilter" type="button">↺ Скинути</button>
-      </div>
-      <button id="btnCloseFiltersBottom" class="filter-close-bottom" type="button">Закрити фільтр</button>
-    </div>
+<section class="panel">
+  <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h2 id="listHeading">Мої товари</h2><span class="count"><span id="count">0</span></span></div>
+  <div class="toolbar">
+    <input id="search" type="search" placeholder="Пошук за назвою або артикулом...">
+    <select id="catFilter"><option value="all">Усі категорії</option><option value="clothes">Одяг</option><option value="shoes">Взуття</option><option value="accessories">Аксесуари</option></select>
+    <select id="sort"><option value="new">Спочатку нові</option><option value="old">Спочатку старі</option><option value="priceAsc">Ціна ↑</option><option value="priceDesc">Ціна ↓</option></select>
   </div>
-
-  <div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="titleSettings">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span id="titleSettings">Налаштування сайту</span>
-        <button class="close-btn" type="button" data-close="settingsModal" aria-label="Close">&times;</button>
-      </div>
-
-      <div class="setting-item">
-        <span id="lblLang">Мова:</span>
-        <select id="langSelect" style="width:auto">
-          <option value="uk">Українська</option>
-          <option value="ru">Русский</option>
-          <option value="en">English</option>
-          <option value="be">Беларуская</option>
-          <option value="de">Deutsch</option>
-          <option value="zh">中文</option>
-          <option value="pl">Polski</option>
-        </select>
-      </div>
-
-      <div class="setting-item">
-        <span id="lblTheme">Тема:</span>
-        <select id="themeSelect" style="width:auto">
-          <option value="dark" id="optDark">Темна</option>
-          <option value="light" id="optLight">Світла</option>
-        </select>
-      </div>
-
-      <div class="setting-item">
-        <span id="lblCurrency">Валюта:</span>
-        <select id="currencySelect" style="width:auto">
-          <option value="UAH">грн (UAH)</option>
-          <option value="USD">$ (USD)</option>
-        </select>
-      </div>
-
-      <button class="btn-buy" id="btnCloseSettings" type="button">Закрити</button>
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_190JBhgoc_-sILNV_fL94Q_DEbfNFhR";
-
-    // Базовая цена товара хранится в UAH.
-    // Для изменения статического курса достаточно поменять одно число.
-    const UAH_PER_USD = 43.68;
-
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    let allProducts = [];
-    let searchTimer = null;
-
-    const CLOTHES_SIZES = ["XXS","XS","S","M","L","XL","XXL","3XL","4XL","One Size"];
-    const SHOE_SIZES = ["35","35.5","36","36.5","37","37.5","38","38.5","39","39.5","40","40.5","41","41.5","42","42.5","43","43.5","44","44.5","45","45.5","46","46.5"];
-
-    const translations = {
-      uk: {
-        siteTitle: "Одяг Premium Взуття",
-        btnFilters: "🔍 Фільтри", btnSettings: "⚙️ Налаштування",
-        searchPlaceholder: "Пошук за назвою або артикулом...",
-        titleFilter: "Фільтри товарів", secCat: "Категорія:",
-        optAllCat: "Усі категорії", optClothes: "Одяг", optShoes: "Взуття", optAcc: "Аксесуари",
-        lblBrand: "Бренд:", optAllBrands: "Усі бренди", optOtherBrand: "Інше",
-        secPrice: "Ціна:", pFrom: "Від", pTo: "До", secSize: "Розміри:",
-        lblSort: "Сортування:", optNew: "Спочатку нові",
-        optAsc: "Від дешевих до дорогих", optDesc: "Від дорогих до дешевих",
-        btnApplyFilter: "✓ Застосувати", btnResetFilter: "↺ Скинути фільтри",
-        titleSettings: "Налаштування сайту", lblLang: "Мова:", lblTheme: "Тема:",
-        optDark: "Темна", optLight: "Світла", lblCurrency: "Валюта:",
-        btnCloseSettings: "Закрити", buyBtn: "Купити в Telegram",
-        unavailableBtn: "Посилання недоступне", brandLbl: "Бренд", catLbl: "Категорія",
-        skuLbl: "Артикул", sizesLbl: "Розміри", emptyMsg: "Товари не знайдені",
-        loading: "Завантаження...", loadError: "Не вдалося завантажити каталог.",
-        retry: "Спробувати ще раз", noImage: "Фото відсутнє",
-        catClothes: "Одяг", catShoes: "Взуття", catAccessories: "Аксесуари"
-      },
-      ru: {
-        siteTitle: "Одежда Premium Обувь",
-        btnFilters: "🔍 Фильтры", btnSettings: "⚙️ Настройки",
-        searchPlaceholder: "Поиск по названию или артикулу...",
-        titleFilter: "Фильтры товаров", secCat: "Категория:",
-        optAllCat: "Все категории", optClothes: "Одежда", optShoes: "Обувь", optAcc: "Аксессуары",
-        lblBrand: "Бренд:", optAllBrands: "Все бренды", optOtherBrand: "Другое",
-        secPrice: "Цена:", pFrom: "От", pTo: "До", secSize: "Размеры:",
-        lblSort: "Сортировка:", optNew: "Сначала новые",
-        optAsc: "От дешёвых к дорогим", optDesc: "От дорогих к дешёвым",
-        btnApplyFilter: "✓ Применить", btnResetFilter: "↺ Сбросить фильтры",
-        titleSettings: "Настройки сайта", lblLang: "Язык:", lblTheme: "Тема:",
-        optDark: "Тёмная", optLight: "Светлая", lblCurrency: "Валюта:",
-        btnCloseSettings: "Закрыть", buyBtn: "Купить в Telegram",
-        unavailableBtn: "Ссылка недоступна", brandLbl: "Бренд", catLbl: "Категория",
-        skuLbl: "Артикул", sizesLbl: "Размеры", emptyMsg: "Товары не найдены",
-        loading: "Загрузка...", loadError: "Не удалось загрузить каталог.",
-        retry: "Попробовать ещё раз", noImage: "Фото отсутствует",
-        catClothes: "Одежда", catShoes: "Обувь", catAccessories: "Аксессуары"
-      },
-      en: {
-        siteTitle: "Premium Clothing & Footwear",
-        btnFilters: "🔍 Filters", btnSettings: "⚙️ Settings",
-        searchPlaceholder: "Search by name or SKU...",
-        titleFilter: "Product filters", secCat: "Category:",
-        optAllCat: "All categories", optClothes: "Clothing", optShoes: "Footwear", optAcc: "Accessories",
-        lblBrand: "Brand:", optAllBrands: "All brands", optOtherBrand: "Other",
-        secPrice: "Price:", pFrom: "From", pTo: "To", secSize: "Sizes:",
-        lblSort: "Sort:", optNew: "Newest first",
-        optAsc: "Price: low to high", optDesc: "Price: high to low",
-        btnApplyFilter: "✓ Apply", btnResetFilter: "↺ Reset filters",
-        titleSettings: "Site settings", lblLang: "Language:", lblTheme: "Theme:",
-        optDark: "Dark", optLight: "Light", lblCurrency: "Currency:",
-        btnCloseSettings: "Close", buyBtn: "Buy on Telegram",
-        unavailableBtn: "Link unavailable", brandLbl: "Brand", catLbl: "Category",
-        skuLbl: "SKU", sizesLbl: "Sizes", emptyMsg: "No products found",
-        loading: "Loading...", loadError: "Failed to load the catalog.",
-        retry: "Try again", noImage: "No image",
-        catClothes: "Clothing", catShoes: "Footwear", catAccessories: "Accessories"
-      },
-      be: {
-        siteTitle: "Прэміум Адзенне і Абутак",
-        btnFilters: "🔍 Фільтры", btnSettings: "⚙️ Налады",
-        searchPlaceholder: "Пошук па назве або артыкуле...",
-        titleFilter: "Фільтры тавараў", secCat: "Катэгорыя:",
-        optAllCat: "Усе катэгорыі", optClothes: "Адзенне", optShoes: "Абутак", optAcc: "Аксэсуары",
-        lblBrand: "Брэнд:", optAllBrands: "Усе брэнды", optOtherBrand: "Іншае",
-        secPrice: "Цана:", pFrom: "Ад", pTo: "Да", secSize: "Памеры:",
-        lblSort: "Сартаванне:", optNew: "Спачатку новыя",
-        optAsc: "Ад танных да дарагіх", optDesc: "Ад дарагіх да танных",
-        btnApplyFilter: "✓ Ужыць", btnResetFilter: "↺ Скінуць фільтры",
-        titleSettings: "Налады сайта", lblLang: "Мова:", lblTheme: "Тэма:",
-        optDark: "Цёмная", optLight: "Светлая", lblCurrency: "Валюта:",
-        btnCloseSettings: "Закрыць", buyBtn: "Купіць у Telegram",
-        unavailableBtn: "Спасылка недаступная", brandLbl: "Брэнд", catLbl: "Катэгорыя",
-        skuLbl: "Артыкул", sizesLbl: "Памеры", emptyMsg: "Тавары не знойдзены",
-        loading: "Загрузка...", loadError: "Не ўдалося загрузіць каталог.",
-        retry: "Паспрабаваць яшчэ раз", noImage: "Няма фота",
-        catClothes: "Адзенне", catShoes: "Абутак", catAccessories: "Аксэсуары"
-      },
-      de: {
-        siteTitle: "Premium Kleidung & Schuhe",
-        btnFilters: "🔍 Filter", btnSettings: "⚙️ Einstellungen",
-        searchPlaceholder: "Nach Name oder Artikelnummer suchen...",
-        titleFilter: "Produktfilter", secCat: "Kategorie:",
-        optAllCat: "Alle Kategorien", optClothes: "Kleidung", optShoes: "Schuhe", optAcc: "Accessoires",
-        lblBrand: "Marke:", optAllBrands: "Alle Marken", optOtherBrand: "Andere",
-        secPrice: "Preis:", pFrom: "Von", pTo: "Bis", secSize: "Größen:",
-        lblSort: "Sortierung:", optNew: "Neueste zuerst",
-        optAsc: "Preis aufsteigend", optDesc: "Preis absteigend",
-        btnApplyFilter: "✓ Anwenden", btnResetFilter: "↺ Filter zurücksetzen",
-        titleSettings: "Seiteneinstellungen", lblLang: "Sprache:", lblTheme: "Design:",
-        optDark: "Dunkel", optLight: "Hell", lblCurrency: "Währung:",
-        btnCloseSettings: "Schließen", buyBtn: "Über Telegram kaufen",
-        unavailableBtn: "Link nicht verfügbar", brandLbl: "Marke", catLbl: "Kategorie",
-        skuLbl: "Artikelnummer", sizesLbl: "Größen", emptyMsg: "Keine Produkte gefunden",
-        loading: "Wird geladen...", loadError: "Der Katalog konnte nicht geladen werden.",
-        retry: "Erneut versuchen", noImage: "Kein Bild",
-        catClothes: "Kleidung", catShoes: "Schuhe", catAccessories: "Accessoires"
-      },
-      zh: {
-        siteTitle: "精品服装与鞋履",
-        btnFilters: "🔍 筛选", btnSettings: "⚙️ 设置",
-        searchPlaceholder: "按名称或商品编号搜索...",
-        titleFilter: "商品筛选", secCat: "分类：",
-        optAllCat: "所有分类", optClothes: "服装", optShoes: "鞋履", optAcc: "配饰",
-        lblBrand: "品牌：", optAllBrands: "所有品牌", optOtherBrand: "其他",
-        secPrice: "价格：", pFrom: "最低", pTo: "最高", secSize: "尺码：",
-        lblSort: "排序：", optNew: "最新优先",
-        optAsc: "价格从低到高", optDesc: "价格从高到低",
-        btnApplyFilter: "✓ 应用", btnResetFilter: "↺ 重置筛选",
-        titleSettings: "网站设置", lblLang: "语言：", lblTheme: "主题：",
-        optDark: "深色", optLight: "浅色", lblCurrency: "货币：",
-        btnCloseSettings: "关闭", buyBtn: "在 Telegram 购买",
-        unavailableBtn: "链接不可用", brandLbl: "品牌", catLbl: "分类",
-        skuLbl: "商品编号", sizesLbl: "尺码", emptyMsg: "未找到商品",
-        loading: "加载中...", loadError: "无法加载商品目录。",
-        retry: "重试", noImage: "暂无图片",
-        catClothes: "服装", catShoes: "鞋履", catAccessories: "配饰"
-      },
-      pl: {
-        siteTitle: "Odzież i Obuwie Premium",
-        btnFilters: "🔍 Filtry", btnSettings: "⚙️ Ustawienia",
-        searchPlaceholder: "Szukaj po nazwie lub numerze artykułu...",
-        titleFilter: "Filtry produktów", secCat: "Kategoria:",
-        optAllCat: "Wszystkie kategorie", optClothes: "Odzież", optShoes: "Obuwie", optAcc: "Akcesoria",
-        lblBrand: "Marka:", optAllBrands: "Wszystkie marki", optOtherBrand: "Inne",
-        secPrice: "Cena:", pFrom: "Od", pTo: "Do", secSize: "Rozmiary:",
-        lblSort: "Sortowanie:", optNew: "Najpierw najnowsze",
-        optAsc: "Od najtańszych", optDesc: "Od najdroższych",
-        btnApplyFilter: "✓ Zastosuj", btnResetFilter: "↺ Resetuj filtry",
-        titleSettings: "Ustawienia strony", lblLang: "Język:", lblTheme: "Motyw:",
-        optDark: "Ciemny", optLight: "Jasny", lblCurrency: "Waluta:",
-        btnCloseSettings: "Zamknij", buyBtn: "Kup przez Telegram",
-        unavailableBtn: "Link niedostępny", brandLbl: "Marka", catLbl: "Kategoria",
-        skuLbl: "Numer artykułu", sizesLbl: "Rozmiary", emptyMsg: "Nie znaleziono produktów",
-        loading: "Ładowanie...", loadError: "Nie udało się załadować katalogu.",
-        retry: "Spróbuj ponownie", noImage: "Brak zdjęcia",
-        catClothes: "Odzież", catShoes: "Obuwie", catAccessories: "Akcesoria"
-      }
-    };
-
-    const $ = id => document.getElementById(id);
-    const getLang = () => $("langSelect").value in translations ? $("langSelect").value : "uk";
-    const getT = () => translations[getLang()];
-
-    // Словарь обычных слов в названиях товаров.
-    // Бренды, модели, артикулы и неизвестные слова НЕ меняются.
-    const PRODUCT_WORDS = {
-      "кроссовки": {uk:"Кросівки", ru:"Кроссовки", en:"Sneakers", be:"Красоўкі", de:"Sneaker", zh:"运动鞋", pl:"Sneakersy"},
-      "кросівки":  {uk:"Кросівки", ru:"Кроссовки", en:"Sneakers", be:"Красоўкі", de:"Sneaker", zh:"运动鞋", pl:"Sneakersy"},
-      "худи":       {uk:"Худі", ru:"Худи", en:"Hoodie", be:"Худзі", de:"Hoodie", zh:"连帽衫", pl:"Bluza z kapturem"},
-      "худі":       {uk:"Худі", ru:"Худи", en:"Hoodie", be:"Худзі", de:"Hoodie", zh:"连帽衫", pl:"Bluza z kapturem"},
-      "футболка":   {uk:"Футболка", ru:"Футболка", en:"T-shirt", be:"Футболка", de:"T-Shirt", zh:"T恤", pl:"T-shirt"},
-      "футболки":   {uk:"Футболки", ru:"Футболки", en:"T-shirts", be:"Футболкі", de:"T-Shirts", zh:"T恤", pl:"T-shirty"},
-      "штаны":      {uk:"Штани", ru:"Штаны", en:"Pants", be:"Штаны", de:"Hose", zh:"长裤", pl:"Spodnie"},
-      "штани":      {uk:"Штани", ru:"Штаны", en:"Pants", be:"Штаны", de:"Hose", zh:"长裤", pl:"Spodnie"},
-      "брюки":      {uk:"Штани", ru:"Брюки", en:"Trousers", be:"Штаны", de:"Hose", zh:"长裤", pl:"Spodnie"},
-      "джинсы":     {uk:"Джинси", ru:"Джинсы", en:"Jeans", be:"Джынсы", de:"Jeans", zh:"牛仔裤", pl:"Jeansy"},
-      "джинси":     {uk:"Джинси", ru:"Джинсы", en:"Jeans", be:"Джынсы", de:"Jeans", zh:"牛仔裤", pl:"Jeansy"},
-      "шорты":      {uk:"Шорти", ru:"Шорты", en:"Shorts", be:"Шорты", de:"Shorts", zh:"短裤", pl:"Szorty"},
-      "шорти":      {uk:"Шорти", ru:"Шорты", en:"Shorts", be:"Шорты", de:"Shorts", zh:"短裤", pl:"Szorty"},
-      "куртка":     {uk:"Куртка", ru:"Куртка", en:"Jacket", be:"Куртка", de:"Jacke", zh:"夹克", pl:"Kurtka"},
-      "ветровка":   {uk:"Вітровка", ru:"Ветровка", en:"Windbreaker", be:"Вятроўка", de:"Windjacke", zh:"风衣", pl:"Wiatrówka"},
-      "вітровка":   {uk:"Вітровка", ru:"Ветровка", en:"Windbreaker", be:"Вятроўка", de:"Windjacke", zh:"风衣", pl:"Wiatrówka"},
-      "кофта":      {uk:"Кофта", ru:"Кофта", en:"Sweater", be:"Кофта", de:"Pullover", zh:"毛衣", pl:"Sweter"},
-      "свитшот":    {uk:"Світшот", ru:"Свитшот", en:"Sweatshirt", be:"Світшот", de:"Sweatshirt", zh:"卫衣", pl:"Bluza"},
-      "світшот":    {uk:"Світшот", ru:"Свитшот", en:"Sweatshirt", be:"Світшот", de:"Sweatshirt", zh:"卫衣", pl:"Bluza"},
-      "рубашка":    {uk:"Сорочка", ru:"Рубашка", en:"Shirt", be:"Кашуля", de:"Hemd", zh:"衬衫", pl:"Koszula"},
-      "сорочка":    {uk:"Сорочка", ru:"Рубашка", en:"Shirt", be:"Кашуля", de:"Hemd", zh:"衬衫", pl:"Koszula"},
-      "поло":       {uk:"Поло", ru:"Поло", en:"Polo", be:"Пола", de:"Polo", zh:"Polo衫", pl:"Polo"},
-      "майка":      {uk:"Майка", ru:"Майка", en:"Tank top", be:"Майка", de:"Tanktop", zh:"背心", pl:"Top"},
-      "кепка":      {uk:"Кепка", ru:"Кепка", en:"Cap", be:"Кепка", de:"Kappe", zh:"帽子", pl:"Czapka"},
-      "шапка":      {uk:"Шапка", ru:"Шапка", en:"Beanie", be:"Шапка", de:"Mütze", zh:"针织帽", pl:"Czapka"},
-      "носки":      {uk:"Шкарпетки", ru:"Носки", en:"Socks", be:"Шкарпэткі", de:"Socken", zh:"袜子", pl:"Skarpetki"},
-      "шкарпетки":  {uk:"Шкарпетки", ru:"Носки", en:"Socks", be:"Шкарпэткі", de:"Socken", zh:"袜子", pl:"Skarpetki"},
-      "ботинки":    {uk:"Черевики", ru:"Ботинки", en:"Boots", be:"Чаравікі", de:"Stiefel", zh:"靴子", pl:"Buty"},
-      "черевики":   {uk:"Черевики", ru:"Ботинки", en:"Boots", be:"Чаравікі", de:"Stiefel", zh:"靴子", pl:"Buty"},
-      "туфли":      {uk:"Туфлі", ru:"Туфли", en:"Shoes", be:"Туфлі", de:"Schuhe", zh:"鞋", pl:"Półbuty"},
-      "туфлі":      {uk:"Туфлі", ru:"Туфли", en:"Shoes", be:"Туфлі", de:"Schuhe", zh:"鞋", pl:"Półbuty"},
-      "сандалии":   {uk:"Сандалі", ru:"Сандалии", en:"Sandals", be:"Сандалі", de:"Sandalen", zh:"凉鞋", pl:"Sandały"},
-      "сандалі":    {uk:"Сандалі", ru:"Сандалии", en:"Sandals", be:"Сандалі", de:"Sandalen", zh:"凉鞋", pl:"Sandały"},
-      "тапочки":    {uk:"Капці", ru:"Тапочки", en:"Slippers", be:"Тапачкі", de:"Hausschuhe", zh:"拖鞋", pl:"Kapcie"},
-      "капці":      {uk:"Капці", ru:"Тапочки", en:"Slippers", be:"Тапачкі", de:"Hausschuhe", zh:"拖鞋", pl:"Kapcie"},
-      "сумка":      {uk:"Сумка", ru:"Сумка", en:"Bag", be:"Сумка", de:"Tasche", zh:"包", pl:"Torba"},
-      "рюкзак":     {uk:"Рюкзак", ru:"Рюкзак", en:"Backpack", be:"Заплечнік", de:"Rucksack", zh:"双肩包", pl:"Plecak"},
-      "ремень":     {uk:"Ремінь", ru:"Ремень", en:"Belt", be:"Рэмень", de:"Gürtel", zh:"腰带", pl:"Pasek"},
-      "ремінь":     {uk:"Ремінь", ru:"Ремень", en:"Belt", be:"Рэмень", de:"Gürtel", zh:"腰带", pl:"Pasek"},
-      "очки":       {uk:"Окуляри", ru:"Очки", en:"Glasses", be:"Акуляры", de:"Brille", zh:"眼镜", pl:"Okulary"},
-      "окуляри":    {uk:"Окуляри", ru:"Очки", en:"Glasses", be:"Акуляры", de:"Brille", zh:"眼镜", pl:"Okulary"},
-      "перчатки":   {uk:"Рукавички", ru:"Перчатки", en:"Gloves", be:"Пальчаткі", de:"Handschuhe", zh:"手套", pl:"Rękawiczki"},
-      "рукавички":  {uk:"Рукавички", ru:"Перчатки", en:"Gloves", be:"Пальчаткі", de:"Handschuhe", zh:"手套", pl:"Rękawiczki"},
-      "мужские":    {uk:"Чоловічі", ru:"Мужские", en:"Men's", be:"Мужчынскія", de:"Herren", zh:"男款", pl:"Męskie"},
-      "чоловічі":   {uk:"Чоловічі", ru:"Мужские", en:"Men's", be:"Мужчынскія", de:"Herren", zh:"男款", pl:"Męskie"},
-      "женские":    {uk:"Жіночі", ru:"Женские", en:"Women's", be:"Жаночыя", de:"Damen", zh:"女款", pl:"Damskie"},
-      "жіночі":     {uk:"Жіночі", ru:"Женские", en:"Women's", be:"Жаночыя", de:"Damen", zh:"女款", pl:"Damskie"},
-      "детские":    {uk:"Дитячі", ru:"Детские", en:"Kids'", be:"Дзіцячыя", de:"Kinder", zh:"童款", pl:"Dziecięce"},
-      "дитячі":     {uk:"Дитячі", ru:"Детские", en:"Kids'", be:"Дзіцячыя", de:"Kinder", zh:"童款", pl:"Dziecięce"},
-      "черный":     {uk:"Чорний", ru:"Чёрный", en:"Black", be:"Чорны", de:"Schwarz", zh:"黑色", pl:"Czarny"},
-      "чёрный":     {uk:"Чорний", ru:"Чёрный", en:"Black", be:"Чорны", de:"Schwarz", zh:"黑色", pl:"Czarny"},
-      "чорний":     {uk:"Чорний", ru:"Чёрный", en:"Black", be:"Чорны", de:"Schwarz", zh:"黑色", pl:"Czarny"},
-      "белый":      {uk:"Білий", ru:"Белый", en:"White", be:"Белы", de:"Weiß", zh:"白色", pl:"Biały"},
-      "білий":      {uk:"Білий", ru:"Белый", en:"White", be:"Белы", de:"Weiß", zh:"白色", pl:"Biały"},
-      "красный":    {uk:"Червоний", ru:"Красный", en:"Red", be:"Чырвоны", de:"Rot", zh:"红色", pl:"Czerwony"},
-      "червоний":   {uk:"Червоний", ru:"Красный", en:"Red", be:"Чырвоны", de:"Rot", zh:"红色", pl:"Czerwony"},
-      "синий":      {uk:"Синій", ru:"Синий", en:"Blue", be:"Сіні", de:"Blau", zh:"蓝色", pl:"Niebieski"},
-      "синій":      {uk:"Синій", ru:"Синий", en:"Blue", be:"Сіні", de:"Blau", zh:"蓝色", pl:"Niebieski"},
-      "зеленый":    {uk:"Зелений", ru:"Зелёный", en:"Green", be:"Зялёны", de:"Grün", zh:"绿色", pl:"Zielony"},
-      "зелёный":    {uk:"Зелений", ru:"Зелёный", en:"Green", be:"Зялёны", de:"Grün", zh:"绿色", pl:"Zielony"},
-      "зелений":    {uk:"Зелений", ru:"Зелёный", en:"Green", be:"Зялёны", de:"Grün", zh:"绿色", pl:"Zielony"}
-    };
-
-    const SYSTEM_VALUES = {
-      "інше": {uk:"Інше", ru:"Другое", en:"Other", be:"Іншае", de:"Andere", zh:"其他", pl:"Inne"},
-      "другое": {uk:"Інше", ru:"Другое", en:"Other", be:"Іншае", de:"Andere", zh:"其他", pl:"Inne"},
-      "other": {uk:"Інше", ru:"Другое", en:"Other", be:"Іншае", de:"Andere", zh:"其他", pl:"Inne"}
-    };
-
-    function translateProductTitle(value) {
-      const original = String(value || "").trim();
-      if (!original) return "—";
-      const lang = getLang();
-
-      // Разбиваем только по пробелам/дефисам, поэтому Nike, Adidas, Air Max,
-      // номера моделей, SKU и любые неизвестные названия остаются как в базе.
-      return original.split(/(\s+|[-–—/])/).map(part => {
-        const key = part.toLocaleLowerCase();
-        const entry = PRODUCT_WORDS[key];
-        return entry?.[lang] || part;
-      }).join("");
-    }
-
-    function translateSystemValue(value) {
-      const original = String(value || "").trim();
-      if (!original) return "—";
-      return SYSTEM_VALUES[original.toLocaleLowerCase()]?.[getLang()] || original;
-    }
-
-    const SUBCATEGORIES = {
-      clothes: [
-        ["hoodies","Худі","Худи","Hoodies","Худзі","Hoodies","连帽衫","Bluzy z kapturem"],
-        ["sweatshirts","Світшоти","Свитшоты","Sweatshirts","Світшоты","Sweatshirts","卫衣","Bluzy"],
-        ["sweaters","Кофти","Кофты","Sweaters","Кофты","Pullover","毛衣","Swetry"],
-        ["tshirts","Футболки","Футболки","T-shirts","Футболкі","T-Shirts","T恤","T-shirty"],
-        ["shirts","Сорочки","Рубашки","Shirts","Кашулі","Hemden","衬衫","Koszule"],
-        ["pants","Штани","Штаны","Pants","Штаны","Hosen","裤子","Spodnie"],
-        ["jeans","Джинси","Джинсы","Jeans","Джынсы","Jeans","牛仔裤","Jeansy"],
-        ["shorts","Шорти","Шорты","Shorts","Шорты","Shorts","短裤","Szorty"],
-        ["jackets","Куртки","Куртки","Jackets","Курткі","Jacken","夹克","Kurtki"],
-        ["coats","Пальта","Пальто","Coats","Паліто","Mäntel","大衣","Płaszcze"],
-        ["dresses","Сукні","Платья","Dresses","Сукенкі","Kleider","连衣裙","Sukienki"],
-        ["skirts","Спідниці","Юбки","Skirts","Спадніцы","Röcke","半身裙","Spódnice"],
-        ["underwear","Білизна","Бельё","Underwear","Бялізна","Unterwäsche","内衣","Bielizna"]
-      ],
-      shoes: [
-        ["sneakers","Кросівки","Кроссовки","Sneakers","Красоўкі","Sneaker","运动鞋","Sneakersy"],
-        ["boots","Черевики","Ботинки","Boots","Чаравікі","Stiefel","靴子","Buty"],
-        ["sandals","Босоніжки","Босоножки","Sandals","Басаножкі","Sandalen","凉鞋","Sandały"],
-        ["slippers","Капці","Тапочки","Slippers","Тапачкі","Hausschuhe","拖鞋","Kapcie"],
-        ["loafers","Лофери","Лоферы","Loafers","Лоферы","Loafer","乐福鞋","Mokasyny"],
-        ["shoes_classic","Туфлі","Туфли","Shoes","Туфлі","Schuhe","皮鞋","Półbuty"]
-      ],
-      accessories: [
-        ["bags","Сумки","Сумки","Bags","Сумкі","Taschen","包","Torby"],
-        ["backpacks","Рюкзаки","Рюкзаки","Backpacks","Заплечнікі","Rucksäcke","背包","Plecaki"],
-        ["caps","Кепки","Кепки","Caps","Кепкі","Caps","帽子","Czapki"],
-        ["belts","Ремені","Ремни","Belts","Рамяні","Gürtel","腰带","Paski"],
-        ["glasses","Окуляри","Очки","Glasses","Акуляры","Brillen","眼镜","Okulary"],
-        ["wallets","Гаманці","Кошельки","Wallets","Кашалькі","Geldbörsen","钱包","Portfele"]
-      ]
-    };
-    const SUBCAT_LANG_INDEX = {uk:1,ru:2,en:3,be:4,de:5,zh:6,pl:7};
-    const SUBCAT_TEXT = {
-      uk:["Підкатегорія:","Усі підкатегорії"], ru:["Подкатегория:","Все подкатегории"],
-      en:["Subcategory:","All subcategories"], be:["Падкатэгорыя:","Усе падкатэгорыі"],
-      de:["Unterkategorie:","Alle Unterkategorien"], zh:["子分类：","所有子分类"],
-      pl:["Podkategoria:","Wszystkie podkategorie"]
-    };
-    function subcategoryName(value) {
-      const idx = SUBCAT_LANG_INDEX[getLang()] || 1;
-      for (const rows of Object.values(SUBCATEGORIES)) {
-        const row = rows.find(r => r[0] === value);
-        if (row) return row[idx] || row[1];
-      }
-      return value || "—";
-    }
-    function renderSubcategoryOptions(preserve=true) {
-      const select = $("subcategorySelect");
-      if (!select) return;
-      const old = preserve ? select.value : "all";
-      const lang = getLang();
-      const text = SUBCAT_TEXT[lang] || SUBCAT_TEXT.uk;
-      const category = $("categorySelect").value;
-      select.replaceChildren();
-      select.add(new Option(text[1], "all"));
-      const rows = category === "all" ? Object.values(SUBCATEGORIES).flat() : (SUBCATEGORIES[category] || []);
-      rows.forEach(row => select.add(new Option(row[SUBCAT_LANG_INDEX[lang] || 1] || row[1], row[0])));
-      if ([...select.options].some(o => o.value === old)) select.value = old;
-      $("secSubcat").textContent = text[0];
-    }
-
-    function categoryName(category) {
-      const t = getT();
-      return ({clothes:t.catClothes, shoes:t.catShoes, accessories:t.catAccessories})[category] || category || "—";
-    }
-
-    function validHttpUrl(value) {
-      try {
-        const url = new URL(value);
-        return ["http:", "https:"].includes(url.protocol) ? url.href : null;
-      } catch { return null; }
-    }
-
-    function formatPrice(value) {
-      const priceUAH = Number(value);
-      const safePrice = Number.isFinite(priceUAH) ? priceUAH : 0;
-      const locale = {
-        uk: "uk-UA", ru: "ru-RU", en: "en-US", be: "be-BY",
-        de: "de-DE", zh: "zh-CN", pl: "pl-PL"
-      }[getLang()] || "uk-UA";
-
-      if ($("currencySelect").value === "USD") {
-        const usd = safePrice / UAH_PER_USD;
-        return new Intl.NumberFormat(locale, {
-          style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2
-        }).format(usd);
-      }
-      return new Intl.NumberFormat(locale, {
-        style: "currency", currency: "UAH", maximumFractionDigits: 0
-      }).format(safePrice);
-    }
-
-    function getSelectedSizes() {
-      return [...document.querySelectorAll(".size-checkbox:checked")].map(cb => cb.value);
-    }
-
-    function renderSizeCheckboxes(preserve = true) {
-      const oldSelected = preserve ? new Set(getSelectedSizes()) : new Set();
-      const category = $("categorySelect").value;
-      const container = $("sizesColumnList");
-      container.replaceChildren();
-
-      let targetSizes = [];
-      if (category === "clothes") targetSizes = CLOTHES_SIZES;
-      else if (category === "shoes") targetSizes = SHOE_SIZES;
-      else if (category === "accessories") targetSizes = [];
-      else targetSizes = [...CLOTHES_SIZES, ...SHOE_SIZES];
-
-      if (!targetSizes.length) {
-        const note = document.createElement("span");
-        note.className = "card-meta";
-        note.textContent = "—";
-        container.appendChild(note);
-        return;
-      }
-
-      targetSizes.forEach(size => {
-        const label = document.createElement("label");
-        label.className = "size-column-item";
-        const input = document.createElement("input");
-        input.type = "checkbox";
-        input.value = size;
-        input.className = "size-checkbox";
-        input.checked = oldSelected.has(size);
-        const span = document.createElement("span");
-        span.textContent = size;
-        label.append(input, span);
-        container.appendChild(label);
-      });
-    }
-
-    async function loadProducts() {
-      const t = getT();
-      $("productsGrid").innerHTML = `<div class="empty-msg">${t.loading}</div>`;
-      try {
-        const { data, error } = await supabaseClient
-          .from("products")
-          .select("id,title,sku,category,subcategory,brand,price,image_url,tg_link,sizes")
-          .order("id", { ascending: false });
-
-        if (error) throw error;
-        allProducts = data || [];
-        filterAndRender();
-      } catch (err) {
-        console.error(err);
-        showLoadError();
-      }
-    }
-
-    function showLoadError() {
-      const grid = $("productsGrid");
-      const t = getT();
-      grid.replaceChildren();
-      const box = document.createElement("div");
-      box.className = "empty-msg";
-      const text = document.createElement("div");
-      text.textContent = t.loadError;
-      const retry = document.createElement("button");
-      retry.type = "button";
-      retry.className = "btn-action retry-btn";
-      retry.textContent = t.retry;
-      retry.addEventListener("click", loadProducts);
-      box.append(text, retry);
-      grid.appendChild(box);
-    }
-
-    function filterAndRender() {
-      const search = $("searchInput").value.trim().toLocaleLowerCase();
-      const category = $("categorySelect").value;
-      const selectedBrand = $("brandSelect").value;
-      const selectedSubcategory = $("subcategorySelect").value;
-      const fromRaw = Number($("priceFrom").value);
-      const toRaw = Number($("priceTo").value);
-      const filterCurrency = $("currencySelect").value;
-      const priceMultiplier = filterCurrency === "USD" ? UAH_PER_USD : 1;
-      const pFrom = $("priceFrom").value === "" || !Number.isFinite(fromRaw)
-        ? 0
-        : Math.max(0, fromRaw) * priceMultiplier;
-      const pTo = $("priceTo").value === "" || !Number.isFinite(toRaw)
-        ? Infinity
-        : Math.max(0, toRaw) * priceMultiplier;
-      const checkedSizes = getSelectedSizes();
-
-      let filtered = allProducts.filter(p => {
-        const title = String(p.title || "").toLocaleLowerCase();
-        const translatedTitle = translateProductTitle(p.title).toLocaleLowerCase();
-        const sku = String(p.sku || "").toLocaleLowerCase();
-        const matchText = title.includes(search) || translatedTitle.includes(search) || sku.includes(search);
-        const matchCategory = category === "all" || p.category === category;
-        const matchSubcategory = selectedSubcategory === "all" || p.subcategory === selectedSubcategory;
-        const matchBrand = selectedBrand === "all" || String(p.brand || "").toLocaleLowerCase() === selectedBrand.toLocaleLowerCase();
-        const price = Number(p.price);
-        const safePrice = Number.isFinite(price) ? price : 0;
-        const matchPrice = safePrice >= pFrom && safePrice <= pTo;
-        const matchSize = checkedSizes.length === 0 ||
-          (Array.isArray(p.sizes) && checkedSizes.some(size => p.sizes.includes(size)));
-        return matchText && matchCategory && matchSubcategory && matchBrand && matchPrice && matchSize;
-      });
-
-      const sort = $("sortSelect").value;
-      if (sort === "price_asc") filtered.sort((a,b) => Number(a.price) - Number(b.price));
-      else if (sort === "price_desc") filtered.sort((a,b) => Number(b.price) - Number(a.price));
-      else filtered.sort((a,b) => Number(b.id) - Number(a.id));
-
-      renderProducts(filtered);
-    }
-
-    function renderProducts(products) {
-      const grid = $("productsGrid");
-      const t = getT();
-      grid.replaceChildren();
-
-      if (!products.length) {
-        const empty = document.createElement("div");
-        empty.className = "empty-msg";
-        empty.textContent = t.emptyMsg;
-        grid.appendChild(empty);
-        return;
-      }
-
-      products.forEach(p => {
-        const card = document.createElement("article");
-        card.className = "card";
-
-        const imageUrl = validHttpUrl(p.image_url);
-        if (imageUrl) {
-          const img = document.createElement("img");
-          img.className = "product-image";
-          img.src = imageUrl;
-          img.alt = String(p.title || "");
-          img.loading = "lazy";
-          img.addEventListener("error", () => {
-            const fallback = document.createElement("div");
-            fallback.className = "image-placeholder";
-            fallback.textContent = "🖼️";
-            fallback.title = t.noImage;
-            img.replaceWith(fallback);
-          }, {once:true});
-          card.appendChild(img);
-        } else {
-          const fallback = document.createElement("div");
-          fallback.className = "image-placeholder";
-          fallback.textContent = "🖼️";
-          fallback.title = t.noImage;
-          card.appendChild(fallback);
-        }
-
-        const body = document.createElement("div");
-        body.className = "card-body";
-
-        const title = document.createElement("h3");
-        title.className = "card-title";
-        title.textContent = translateProductTitle(p.title);
-
-        const sku = document.createElement("div");
-        sku.className = "card-sku";
-        const skuLabel = document.createElement("span");
-        skuLabel.className = "card-sku-label";
-        skuLabel.textContent = `${t.skuLbl}: `;
-        const skuValue = document.createElement("span");
-        skuValue.className = "card-sku-value";
-        skuValue.textContent = p.sku || "—";
-        sku.append(skuLabel, skuValue);
-
-        const meta = document.createElement("div");
-        meta.className = "card-meta";
-        meta.replaceChildren();
-
-        const addMetaField = (label, value) => {
-          const field = document.createElement("span");
-          field.className = "card-meta-field";
-
-          const labelEl = document.createElement("span");
-          labelEl.className = "card-meta-label";
-          labelEl.textContent = label;
-
-          const valueEl = document.createElement("span");
-          valueEl.className = "card-meta-value";
-          valueEl.textContent = value;
-
-          field.append(labelEl, valueEl);
-          meta.appendChild(field);
-        };
-
-        addMetaField(t.brandLbl, translateSystemValue(p.brand));
-        addMetaField(t.catLbl, categoryName(p.category));
-
-        const subcat = document.createElement("div");
-        subcat.className = "card-subcategory";
-        if (p.subcategory) {
-          const subcatTitle = document.createElement("span");
-          subcatTitle.className = "card-subcategory-label";
-          const subcatLabels = {
-            uk:"Підкатегорія", ru:"Подкатегория", en:"Subcategory",
-            be:"Падкатэгорыя", de:"Unterkategorie", zh:"子分类", pl:"Podkategoria"
-          };
-          subcatTitle.textContent = subcatLabels[getLang()] || subcatLabels.uk;
-          const subcatValue = document.createElement("span");
-          subcatValue.className = "card-subcategory-value";
-          subcatValue.textContent = subcategoryName(p.subcategory);
-          subcat.append(subcatTitle, subcatValue);
-        }
-
-        const price = document.createElement("div");
-        price.className = "card-price";
-        price.textContent = formatPrice(p.price);
-
-        body.append(title, sku, meta);
-        if (p.subcategory) body.appendChild(subcat);
-        body.appendChild(price);
-
-        if (Array.isArray(p.sizes) && p.sizes.length) {
-          const sizes = document.createElement("div");
-          sizes.className = "sizes-list";
-          sizes.setAttribute("aria-label", t.sizesLbl);
-          p.sizes.forEach(size => {
-            const tag = document.createElement("span");
-            tag.className = "size-tag";
-            tag.textContent = size;
-            sizes.appendChild(tag);
-          });
-          body.appendChild(sizes);
-        }
-
-        const tgUrl = validHttpUrl(p.tg_link);
-        const buy = document.createElement("a");
-        buy.className = "btn-buy";
-        if (tgUrl) {
-          buy.href = tgUrl;
-          buy.target = "_blank";
-          buy.rel = "noopener noreferrer";
-          buy.textContent = t.buyBtn;
-        } else {
-          buy.classList.add("disabled");
-          buy.textContent = t.unavailableBtn;
-          buy.setAttribute("aria-disabled", "true");
-        }
-
-        body.appendChild(buy);
-        card.appendChild(body);
-        grid.appendChild(card);
-      });
-    }
-
-    function applyTranslations() {
-      const t = getT();
-      document.documentElement.lang = getLang();
-      document.title = t.siteTitle;
-      $("siteTitle").textContent = t.siteTitle;
-      $("btnFilters").textContent = t.btnFilters;
-      $("btnSettings").textContent = t.btnSettings;
-      $("searchInput").placeholder = t.searchPlaceholder;
-      $("titleFilter").textContent = t.titleFilter;
-      $("secCat").textContent = t.secCat;
-      $("optAllCat").textContent = t.optAllCat;
-      $("optClothes").textContent = t.optClothes;
-      $("optShoes").textContent = t.optShoes;
-      $("optAcc").textContent = t.optAcc;
-      renderSubcategoryOptions(true);
-      $("lblBrand").textContent = t.lblBrand;
-      $("optAllBrands").textContent = t.optAllBrands;
-      $("optOtherBrand").textContent = t.optOtherBrand;
-      $("secPrice").textContent = t.secPrice;
-      $("priceFrom").placeholder = t.pFrom;
-      $("priceTo").placeholder = t.pTo;
-      $("secSize").textContent = t.secSize;
-      $("lblSort").textContent = t.lblSort;
-      $("optNew").textContent = t.optNew;
-      $("optAsc").textContent = t.optAsc;
-      $("optDesc").textContent = t.optDesc;
-      $("btnApplyFilter").textContent = t.btnApplyFilter;
-      $("btnResetFilter").textContent = t.btnResetFilter;
-      $("titleSettings").textContent = t.titleSettings;
-      $("lblLang").textContent = t.lblLang;
-      $("lblTheme").textContent = t.lblTheme;
-      $("optDark").textContent = t.optDark;
-      $("optLight").textContent = t.optLight;
-      $("lblCurrency").textContent = t.lblCurrency;
-      $("btnCloseSettings").textContent = t.btnCloseSettings;
-      filterAndRender();
-    }
-
-    function saveSettings() {
-      localStorage.setItem("shop_lang", $("langSelect").value);
-      localStorage.setItem("shop_theme", $("themeSelect").value);
-      localStorage.setItem("shop_currency", $("currencySelect").value);
-    }
-
-    function applyTheme() {
-      document.body.classList.toggle("light-theme", $("themeSelect").value === "light");
-    }
-
-    function resetFilters() {
-      $("categorySelect").value = "all";
-      renderSubcategoryOptions(false);
-      $("brandSelect").value = "all";
-      $("priceFrom").value = "";
-      $("priceTo").value = "";
-      $("sortSelect").value = "default";
-      renderSizeCheckboxes(false);
-    renderSubcategoryOptions(false);
-      filterAndRender();
-    }
-
-    function openModal(id) {
-      $(id).classList.add("open");
-      document.body.classList.add("modal-open");
-    }
-
-    function closeModal(id) {
-      $(id).classList.remove("open");
-      if (!document.querySelector(".modal.open")) document.body.classList.remove("modal-open");
-    }
-
-    function restoreSettings() {
-      const lang = localStorage.getItem("shop_lang");
-      const theme = localStorage.getItem("shop_theme");
-      const currency = localStorage.getItem("shop_currency");
-      if (lang && translations[lang]) $("langSelect").value = lang;
-      if (theme === "dark" || theme === "light") $("themeSelect").value = theme;
-      if (currency === "UAH" || currency === "USD") $("currencySelect").value = currency;
-      applyTheme();
-      applyTranslations();
-    }
-
-    $("btnFilters").addEventListener("click", () => openModal("filterModal"));
-    $("btnSettings").addEventListener("click", () => openModal("settingsModal"));
-    $("btnCloseSettings").addEventListener("click", () => closeModal("settingsModal"));
-
-    document.querySelectorAll("[data-close]").forEach(btn => {
-      btn.addEventListener("click", () => closeModal(btn.dataset.close));
-    });
-
-    document.querySelectorAll(".modal").forEach(modal => {
-      modal.addEventListener("click", e => {
-        if (e.target === modal) closeModal(modal.id);
-      });
-    });
-
-    document.addEventListener("keydown", e => {
-      if (e.key === "Escape") {
-        document.querySelectorAll(".modal.open").forEach(modal => closeModal(modal.id));
-      }
-    });
-
-    $("categorySelect").addEventListener("change", () => { renderSizeCheckboxes(true); renderSubcategoryOptions(false); });
-    $("btnApplyFilter").addEventListener("click", () => {
-      filterAndRender();
-      closeModal("filterModal");
-    });
-    $("btnResetFilter").addEventListener("click", resetFilters);
-
-    $("searchInput").addEventListener("input", () => {
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(filterAndRender, 180);
-    });
-
-    $("langSelect").addEventListener("change", () => {
-      saveSettings();
-      applyTranslations();
-    });
-
-    $("themeSelect").addEventListener("change", () => {
-      saveSettings();
-      applyTheme();
-    });
-
-    $("currencySelect").addEventListener("change", () => {
-      saveSettings();
-      $("priceFrom").value = "";
-      $("priceTo").value = "";
-      filterAndRender();
-    });
-
-    restoreSettings();
-    renderSizeCheckboxes(false);
-    loadProducts();
-  </script>
+  <div id="list" class="list"><div class="status">Завантаження...</div></div>
+</section>
+</main>
 
 <script>
-(() => {
- const drawer=document.getElementById("settingsDrawer"), overlay=document.getElementById("drawerOverlay"),
- host=document.getElementById("drawerSettingsHost"), modal=document.getElementById("settingsModal");
- const content=modal?.querySelector(".modal-content");
- if(content){
-   const header=content.querySelector(".modal-header"); if(header) header.remove();
-   const close=content.querySelector("#btnCloseSettings"); if(close) close.style.display="none";
-   while(content.firstChild) host.appendChild(content.firstChild);
- }
- const open=()=>{drawer.classList.add("open");overlay.classList.add("open");document.body.classList.add("modal-open")};
- const close=()=>{drawer.classList.remove("open");overlay.classList.remove("open");document.body.classList.remove("modal-open")};
- document.getElementById("menuBtn").onclick=open; document.getElementById("closeDrawer").onclick=close; overlay.onclick=close;
- document.addEventListener("keydown",e=>{if(e.key==="Escape")close()});
- const sync=()=>{const t=document.getElementById("titleSettings");if(t)document.getElementById("drawerSettingsTitle").textContent=t.textContent};
- ["langSelect","themeSelect","currencySelect"].forEach(id=>document.getElementById(id)?.addEventListener("change",sync)); sync();
-})();
-</script>
-
-
-<script id="namet-v3-runtime">
-(() => {
-  /* Rebuild ticker as two identical groups so there is no empty gap at the loop point. */
-  const track=document.querySelector(".marquee-track");
-  if(track){
-    const words=Array.from({length:14},()=>'<span class="marquee-word">NAMET</span>').join("");
-    track.innerHTML='<div class="marquee-group">'+words+'</div><div class="marquee-group" aria-hidden="true">'+words+'</div>';
-    track.classList.add("seamless");
+const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
+ const SUPABASE_KEY = "sb_publishable_190JBhgoc_-sILNV_fL94Q_DEbfNFhR";
+ const UAH_PER_USD=43.68;
+ const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ const CLOTHES=["XXS","XS","S","M","L","XL","XXL","3XL","4XL","One Size"];
+ const SHOES=["35","35.5","36","36.5","37","37.5","38","38.5","39","39.5","40","40.5","41","41.5","42","42.5","43","43.5","44","44.5","45","45.5","46","46.5"];
+ let products=[],
+ editingId=null,
+ editingImage=null;
+ const I={
+   uk:{
+    head:"Адмін-панель",
+    add:"Додати товар",
+    edit:"Редагувати товар",
+    title:"Назва *",
+    sku:"Артикул",
+    cat:"Категорія *",
+    brand:"Бренд *",
+    price:"Ціна (UAH) *",
+    tg:"Посилання Telegram *",
+    image:"Нове зображення",
+    imageNew:"Для нового товару виберіть фото.",
+    imageEdit:"Залиште порожнім, щоб зберегти старе фото.",
+    sizes:"Розміри",
+    publish:"Опублікувати товар",
+    save:"Зберегти зміни",
+    cancel:"Скасувати редагування",
+    mine:"Мої товари",
+    search:"Пошук за назвою або артикулом...",
+    all:"Усі категорії",
+    clothes:"Одяг",
+    shoes:"Взуття",
+    acc:"Аксесуари",
+    new:"Спочатку нові",
+    old:"Спочатку старі",
+    pa:"Ціна ↑",
+    pd:"Ціна ↓",
+    editBtn:"Редагувати",
+    del:"Видалити",
+    loading:"Завантаження...",
+    empty:"Товарів не знайдено",
+    confirm:"Видалити цей товар?",
+    needImg:"Виберіть зображення.",
+    saved:"Товар збережено.",
+    deleted:"Товар видалено.",
+    error:"Помилка: "
+  },
+   ru:{
+    head:"Админ-панель",
+    add:"Добавить товар",
+    edit:"Редактировать товар",
+    title:"Название *",
+    sku:"Артикул",
+    cat:"Категория *",
+    brand:"Бренд *",
+    price:"Цена (UAH) *",
+    tg:"Ссылка Telegram *",
+    image:"Новое изображение",
+    imageNew:"Для нового товара выберите фото.",
+    imageEdit:"Оставьте пустым, чтобы сохранить старое фото.",
+    sizes:"Размеры",
+    publish:"Опубликовать товар",
+    save:"Сохранить изменения",
+    cancel:"Отменить редактирование",
+    mine:"Мои товары",
+    search:"Поиск по названию или артикулу...",
+    all:"Все категории",
+    clothes:"Одежда",
+    shoes:"Обувь",
+    acc:"Аксессуары",
+    new:"Сначала новые",
+    old:"Сначала старые",
+    pa:"Цена ↑",
+    pd:"Цена ↓",
+    editBtn:"Редактировать",
+    del:"Удалить",
+    loading:"Загрузка...",
+    empty:"Товары не найдены",
+    confirm:"Удалить этот товар?",
+    needImg:"Выберите изображение.",
+    saved:"Товар сохранён.",
+    deleted:"Товар удалён.",
+    error:"Ошибка: "
+  },
+   en:{
+    head:"Admin Panel",
+    add:"Add product",
+    edit:"Edit product",
+    title:"Product name *",
+    sku:"SKU",
+    cat:"Category *",
+    brand:"Brand *",
+    price:"Price (UAH) *",
+    tg:"Telegram link *",
+    image:"New image",
+    imageNew:"Choose an image for a new product.",
+    imageEdit:"Leave empty to keep the current image.",
+    sizes:"Sizes",
+    publish:"Publish product",
+    save:"Save changes",
+    cancel:"Cancel editing",
+    mine:"My products",
+    search:"Search by name or SKU...",
+    all:"All categories",
+    clothes:"Clothing",
+    shoes:"Footwear",
+    acc:"Accessories",
+    new:"Newest first",
+    old:"Oldest first",
+    pa:"Price ↑",
+    pd:"Price ↓",
+    editBtn:"Edit",
+    del:"Delete",
+    loading:"Loading...",
+    empty:"No products found",
+    confirm:"Delete this product?",
+    needImg:"Choose an image.",
+    saved:"Product saved.",
+    deleted:"Product deleted.",
+    error:"Error: "
+  },
+   be:{
+    head:"Адмін-панэль",
+    add:"Дадаць тавар",
+    edit:"Рэдагаваць тавар",
+    title:"Назва *",
+    sku:"Артыкул",
+    cat:"Катэгорыя *",
+    brand:"Брэнд *",
+    price:"Цана (UAH) *",
+    tg:"Спасылка Telegram *",
+    image:"Новая выява",
+    imageNew:"Выберыце фота для новага тавару.",
+    imageEdit:"Пакіньце пустым, каб захаваць старое фота.",
+    sizes:"Памеры",
+    publish:"Апублікаваць тавар",
+    save:"Захаваць змены",
+    cancel:"Скасаваць рэдагаванне",
+    mine:"Мае тавары",
+    search:"Пошук па назве або артыкуле...",
+    all:"Усе катэгорыі",
+    clothes:"Адзенне",
+    shoes:"Абутак",
+    acc:"Аксэсуары",
+    new:"Спачатку новыя",
+    old:"Спачатку старыя",
+    pa:"Цана ↑",
+    pd:"Цана ↓",
+    editBtn:"Рэдагаваць",
+    del:"Выдаліць",
+    loading:"Загрузка...",
+    empty:"Тавары не знойдзены",
+    confirm:"Выдаліць гэты тавар?",
+    needImg:"Выберыце выяву.",
+    saved:"Тавар захаваны.",
+    deleted:"Тавар выдалены.",
+    error:"Памылка: "
+  },
+   de:{
+    head:"Admin-Bereich",
+    add:"Produkt hinzufügen",
+    edit:"Produkt bearbeiten",
+    title:"Produktname *",
+    sku:"Artikelnummer",
+    cat:"Kategorie *",
+    brand:"Marke *",
+    price:"Preis (UAH) *",
+    tg:"Telegram-Link *",
+    image:"Neues Bild",
+    imageNew:"Wählen Sie ein Bild für das neue Produkt.",
+    imageEdit:"Leer lassen, um das aktuelle Bild zu behalten.",
+    sizes:"Größen",
+    publish:"Produkt veröffentlichen",
+    save:"Änderungen speichern",
+    cancel:"Bearbeitung abbrechen",
+    mine:"Meine Produkte",
+    search:"Nach Name oder Artikelnummer suchen...",
+    all:"Alle Kategorien",
+    clothes:"Kleidung",
+    shoes:"Schuhe",
+    acc:"Accessoires",
+    new:"Neueste zuerst",
+    old:"Älteste zuerst",
+    pa:"Preis ↑",
+    pd:"Preis ↓",
+    editBtn:"Bearbeiten",
+    del:"Löschen",
+    loading:"Wird geladen...",
+    empty:"Keine Produkte gefunden",
+    confirm:"Dieses Produkt löschen?",
+    needImg:"Wählen Sie ein Bild.",
+    saved:"Produkt gespeichert.",
+    deleted:"Produkt gelöscht.",
+    error:"Fehler: "
+  },
+   zh:{
+    head:"管理面板",
+    add:"添加商品",
+    edit:"编辑商品",
+    title:"商品名称 *",
+    sku:"商品编号",
+    cat:"分类 *",
+    brand:"品牌 *",
+    price:"价格 (UAH) *",
+    tg:"Telegram 链接 *",
+    image:"新图片",
+    imageNew:"请为新商品选择图片。",
+    imageEdit:"留空可保留当前图片。",
+    sizes:"尺码",
+    publish:"发布商品",
+    save:"保存更改",
+    cancel:"取消编辑",
+    mine:"我的商品",
+    search:"按名称或商品编号搜索...",
+    all:"所有分类",
+    clothes:"服装",
+    shoes:"鞋履",
+    acc:"配饰",
+    new:"最新优先",
+    old:"最早优先",
+    pa:"价格 ↑",
+    pd:"价格 ↓",
+    editBtn:"编辑",
+    del:"删除",
+    loading:"加载中...",
+    empty:"未找到商品",
+    confirm:"删除此商品？",
+    needImg:"请选择图片。",
+    saved:"商品已保存。",
+    deleted:"商品已删除。",
+    error:"错误："
+  },
+   pl:{
+    head:"Panel administratora",
+    add:"Dodaj produkt",
+    edit:"Edytuj produkt",
+    title:"Nazwa produktu *",
+    sku:"Numer artykułu",
+    cat:"Kategoria *",
+    brand:"Marka *",
+    price:"Cena (UAH) *",
+    tg:"Link Telegram *",
+    image:"Nowe zdjęcie",
+    imageNew:"Wybierz zdjęcie dla nowego produktu.",
+    imageEdit:"Zostaw puste, aby zachować obecne zdjęcie.",
+    sizes:"Rozmiary",
+    publish:"Opublikuj produkt",
+    save:"Zapisz zmiany",
+    cancel:"Anuluj edycję",
+    mine:"Moje produkty",
+    search:"Szukaj po nazwie lub numerze artykułu...",
+    all:"Wszystkie kategorie",
+    clothes:"Odzież",
+    shoes:"Obuwie",
+    acc:"Akcesoria",
+    new:"Najnowsze",
+    old:"Najstarsze",
+    pa:"Cena ↑",
+    pd:"Cena ↓",
+    editBtn:"Edytuj",
+    del:"Usuń",
+    loading:"Ładowanie...",
+    empty:"Nie znaleziono produktów",
+    confirm:"Usunąć ten produkt?",
+    needImg:"Wybierz zdjęcie.",
+    saved:"Produkt zapisany.",
+    deleted:"Produkt usunięty.",
+    error:"Błąd: "
   }
-
-  /* Extend the existing theme control with Grey while preserving saved settings. */
-  const theme=document.getElementById("themeSelect");
-  if(theme){
-    const applyExtendedTheme=(value)=>{
-      document.body.classList.remove("light-theme","grey-theme");
-      if(value==="light") document.body.classList.add("light-theme");
-      else if(value==="grey") document.body.classList.add("grey-theme");
-    };
-    theme.addEventListener("change",()=>{applyExtendedTheme(theme.value);localStorage.setItem("theme",theme.value)});
-    const saved=localStorage.getItem("theme");
-    if(saved==="grey"){
-      theme.value="grey";
-      applyExtendedTheme("grey");
-    }
+};
+ const $=id=>document.getElementById(id),
+ T=()=>I[$("lang").value]||I.uk;
+ function catName(c){
+  let t=T();
+  return c==="clothes"?t.clothes:c==="shoes"?t.shoes:c==="accessories"?t.acc:c||"—"
+}
+ function fmtPrice(v){
+  let n=Number(v)||0,
+  usd=$("currency").value==="USD",
+  locale={
+    uk:"uk-UA",
+    ru:"ru-RU",
+    en:"en-US",
+    be:"be-BY",
+    de:"de-DE",
+    zh:"zh-CN",
+    pl:"pl-PL"
   }
-
-  /* Grey option translations for all 7 current languages. */
-  const greyNames={uk:"Сіра",ru:"Серая",en:"Grey",be:"Шэрая",de:"Grau",zh:"灰色",pl:"Szary"};
-  const lang=document.getElementById("langSelect"), grey=document.getElementById("optGrey");
-  const syncGrey=()=>{if(grey&&lang) grey.textContent=greyNames[lang.value]||"Grey"};
-  lang?.addEventListener("change",syncGrey); syncGrey();
-
-  /* Ensure Filters is visible even if an older CSS rule hid/moved it. */
-  const filterBtn=document.getElementById("btnFilters");
-  if(filterBtn){filterBtn.style.display="block";filterBtn.style.visibility="visible";filterBtn.style.opacity="1";}
-})();
-</script>
-
-
-<style id="namet-v4-fixes">
-.search-bar{
-  display:flex !important;
-  flex-direction:row !important;
-  align-items:stretch !important;
-  gap:10px !important;
+  [$("lang").value]||"uk-UA";
+  return new Intl.NumberFormat(locale,{
+    style:"currency",currency:usd?"USD":"UAH",maximumFractionDigits:usd?2:0
+  }).format(usd?n/UAH_PER_USD:n)
 }
-.search-bar #searchInput{flex:1 1 auto !important;min-width:0 !important}
-.search-bar #btnFilters{
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  position:static !important;
-  visibility:visible !important;
-  opacity:1 !important;
-  flex:0 0 auto !important;
-  min-width:130px !important;
-  padding:0 20px !important;
-}
-@media(max-width:650px){
- .search-bar #btnFilters{min-width:auto !important;padding:0 14px !important}
-}
-</style>
-<script id="namet-v4-runtime">
-(() => {
- const theme=document.getElementById("themeSelect");
- if(theme && !theme.querySelector('option[value="grey"]')){
-   const opt=document.createElement("option");
-   opt.value="grey"; opt.id="optGrey";
-   const light=theme.querySelector('option[value="light"]');
-   theme.insertBefore(opt,light);
- }
- const names={uk:"Сіра",ru:"Серая",en:"Grey",be:"Шэрая",de:"Grau",zh:"灰色",pl:"Szary"};
- const lang=document.getElementById("langSelect");
- const sync=()=>{const o=document.getElementById("optGrey");if(o)o.textContent=names[lang?.value]||"Grey"};
- sync(); lang?.addEventListener("change",sync);
-})();
-</script>
+ 
+const SUBCATEGORIES={
+  clothes:[
+    ["hoodies","Худі"],["sweatshirts","Світшоти"],["sweaters","Кофти"],
+    ["tshirts","Футболки"],["shirts","Сорочки"],["pants","Штани"],
+    ["jeans","Джинси"],["shorts","Шорти"],["jackets","Куртки"],
+    ["coats","Пальта"],["dresses","Сукні"],["skirts","Спідниці"],["underwear","Білизна"]
+  ],
+  shoes:[
+    ["sneakers","Кросівки"],["boots","Черевики"],["sandals","Босоніжки"],
+    ["slippers","Капці"],["loafers","Лофери"],["shoes_classic","Туфлі"]
+  ],
+  accessories:[
+    ["bags","Сумки"],["backpacks","Рюкзаки"],["caps","Кепки"],
+    ["belts","Ремені"],["glasses","Окуляри"],["wallets","Гаманці"]
+  ]
+};
 
-
-<style id="namet-v5-ticker">
-.marquee-container{
-  width:100%;
-  overflow:hidden !important;
-  position:relative;
-}
-.marquee-track{
-  display:flex !important;
-  flex-wrap:nowrap !important;
-  width:max-content !important;
-  will-change:transform;
-  animation:none !important;
-}
-.marquee-group{
-  display:flex !important;
-  flex:none !important;
-  white-space:nowrap !important;
-}
-.marquee-word{
-  display:inline-flex !important;
-  flex:none !important;
-  align-items:center;
-  padding:0 34px !important;
-  white-space:nowrap !important;
-}
-</style>
-
-
-<script id="namet-v27-i18n-safe">
-(() => {
- const lang=document.getElementById("langSelect");
- const dict={
-   uk:{empty:"Товари не знайдені",grey:"Сіра",dark:"Темна",light:"Світла",settings:"Налаштування",filters:"🔍 Фільтри"},
-   ru:{empty:"Товары не найдены",grey:"Серая",dark:"Тёмная",light:"Светлая",settings:"Настройки",filters:"🔍 Фильтры"},
-   en:{empty:"No products found",grey:"Grey",dark:"Dark",light:"Light",settings:"Settings",filters:"🔍 Filters"},
-   be:{empty:"Тавары не знойдзены",grey:"Шэрая",dark:"Цёмная",light:"Светлая",settings:"Налады",filters:"🔍 Фільтры"},
-   de:{empty:"Keine Produkte gefunden",grey:"Grau",dark:"Dunkel",light:"Hell",settings:"Einstellungen",filters:"🔍 Filter"},
-   zh:{empty:"未找到商品",grey:"灰色",dark:"深色",light:"浅色",settings:"设置",filters:"🔍 筛选"},
-   pl:{empty:"Nie znaleziono produktów",grey:"Szary",dark:"Ciemny",light:"Jasny",settings:"Ustawienia",filters:"🔍 Filtry"}
- };
- const knownEmpty=new Set([
-   "товари не знайдені","товары не найдены","no products found",
-   "тавары не знойдзены","keine produkte gefunden","未找到商品",
-   "nie znaleziono produktów"
- ]);
- function syncNameTTranslations(){
-   const l=lang?.value||"uk", t=dict[l]||dict.uk;
-   const grey=document.querySelector('#themeSelect option[value="grey"]');
-   const dark=document.querySelector('#themeSelect option[value="dark"]');
-   const light=document.querySelector('#themeSelect option[value="light"]');
-   if(grey && grey.textContent!==t.grey) grey.textContent=t.grey;
-   if(dark && dark.textContent!==t.dark) dark.textContent=t.dark;
-   if(light && light.textContent!==t.light) light.textContent=t.light;
-
-   const drawerTitle=document.getElementById("drawerSettingsTitle");
-   if(drawerTitle && drawerTitle.textContent!==t.settings) drawerTitle.textContent=t.settings;
-
-   const filters=document.getElementById("btnFilters");
-   if(filters && filters.textContent!==t.filters) filters.textContent=t.filters;
-
-   document.querySelectorAll("#productsGrid .empty-msg").forEach(el=>{
-     const tx=(el.textContent||"").trim().toLowerCase();
-     if(knownEmpty.has(tx) && el.textContent!==t.empty) el.textContent=t.empty;
-   });
- }
-
- // No MutationObserver here: filtering already runs through normal UI events.
- // A single deferred sync after those events is enough and cannot recursively observe itself.
- lang?.addEventListener("change",()=>setTimeout(syncNameTTranslations,0));
- ["btnApplyFilter","btnResetFilter"].forEach(id=>{
-   document.getElementById(id)?.addEventListener("click",()=>setTimeout(syncNameTTranslations,0));
- });
- document.getElementById("searchInput")?.addEventListener("input",()=>{
-   clearTimeout(window.__nametI18nTimer);
-   window.__nametI18nTimer=setTimeout(syncNameTTranslations,60);
- });
- syncNameTTranslations();
-})();
-</script>
-
-
-<style id="namet-v8-ticker-final-fix">
-/* Kill every older CSS ticker animation. The ticker is driven ONLY by JS now. */
-.marquee-container .marquee-track,
-.marquee-container .marquee-track.seamless{
-  animation:none !important;
-  -webkit-animation:none !important;
-}
-</style>
-<script id="namet-v8-ticker-final-runtime">
-(() => {
-  const oldTrack=document.querySelector(".marquee-track");
-  if(!oldTrack) return;
-
-  /* Replace the node to remove ticker listeners/RAF logic attached by older versions. */
-  const track=oldTrack.cloneNode(false);
-  oldTrack.replaceWith(track);
-  track.className="marquee-track";
-
-  let raf=0, x=0, last=performance.now(), groupWidth=0;
-  const speed=57; /* tuned by request */
-
-  const build=()=>{
-    cancelAnimationFrame(raf);
-    const word='<span class="marquee-word">NAMET</span>';
-    const count=Math.max(18,Math.ceil(window.innerWidth/90)+8);
-    const group='<div class="marquee-group">'+word.repeat(count)+'</div>';
-    track.innerHTML=group+group+group;
-    groupWidth=track.children[0].getBoundingClientRect().width;
-    x=0; last=performance.now();
-    track.style.transform="translate3d(0,0,0)";
-    raf=requestAnimationFrame(tick);
-  };
-
-  const tick=(now)=>{
-    const dt=Math.min((now-last)/1000,.05);
-    last=now;
-    x-=speed*dt;
-    if(groupWidth && x<=-groupWidth) x+=groupWidth;
-    track.style.transform=`translate3d(${x}px,0,0)`;
-    raf=requestAnimationFrame(tick);
-  };
-
-  document.addEventListener("visibilitychange",()=>{
-    if(document.hidden){
-      cancelAnimationFrame(raf);
-    }else{
-      last=performance.now();
-      cancelAnimationFrame(raf);
-      raf=requestAnimationFrame(tick);
-    }
+function subcategoryUI(selected=null){
+  const select=$("subcategory");
+  if(!select)return;
+  const category=$("category").value;
+  const rows=SUBCATEGORIES[category]||[];
+  select.replaceChildren();
+  rows.forEach(([value,label])=>{
+    const o=document.createElement("option");
+    o.value=value;
+    o.textContent=label;
+    select.appendChild(o);
   });
 
-  build();
-})();
-</script>
-
-
-
-<script id="namet-filter-redesign-runtime-v19">
-(() => {
-  const bottom=document.getElementById("btnCloseFiltersBottom");
-  const modal=document.getElementById("filtersModal")||document.getElementById("filterModal");
-
-  function closeFilters(){
-    const top =
-      document.getElementById("btnCloseFilters") ||
-      modal?.querySelector(".filter-close,.close-filter,.close,[data-close]");
-    if(top && top!==bottom){ top.click(); return; }
-
-    // Safe fallback if the original close control has a different selector.
-    if(modal){
-      modal.classList.remove("show","open","active");
-      modal.style.display="none";
-    }
+  // Important: only select the product's saved subcategory if it belongs
+  // to the current category. Otherwise use that category's first valid option.
+  if(selected && rows.some(([value])=>value===selected)){
+    select.value=selected;
+  }else if(rows.length){
+    select.value=rows[0][0];
   }
-  bottom?.addEventListener("click",closeFilters);
+}
 
-  // Add a gentle entrance animation whenever the existing Filters button opens the modal.
-  document.getElementById("btnFilters")?.addEventListener("click",()=>{
-    const box=modal?.querySelector(".filter-modal-content,.modal-content")||modal;
-    if(!box)return;
-    box.animate(
-      [{opacity:.45,transform:"translateY(8px) scale(.985)"},{opacity:1,transform:"translateY(0) scale(1)"}],
-      {duration:240,easing:"cubic-bezier(.2,.8,.2,1)"}
-    );
+function sizesUI(selected=[]){
+  let box=$("sizes"),
+  arr=$("category").value==="shoes"?SHOES:$("category").value==="accessories"?[]:CLOTHES;
+  box.replaceChildren();
+  if(!arr.length){
+    box.textContent="—";
+    return
+  }
+  arr.forEach(s=>{
+    let l=document.createElement("label");l.className="size";let i=document.createElement("input");i.type="checkbox";i.value=s;i.checked=selected.includes(s);l.append(i,document.createTextNode(" "+s));box.append(l)
+  })
+}
+ function applyText(){
+  let t=T();
+  document.documentElement.lang=$("lang").value;
+  $("headTitle").textContent=t.head;
+  $("formHeading").textContent=editingId?t.edit:t.add;
+  $("lTitle").textContent=t.title;
+  $("lSku").textContent=t.sku;
+  $("lCat").textContent=t.cat;
+  $("lBrand").textContent=t.brand;
+  $("lPrice").textContent=t.price;
+  $("lTg").textContent=t.tg;
+  $("lImage").textContent=t.image;
+  $("imageHint").textContent=editingId?t.imageEdit:t.imageNew;
+  $("lSizes").textContent=t.sizes;
+  $("saveBtn").textContent=editingId?t.save:t.publish;
+  $("cancelBtn").textContent=t.cancel;
+  $("listHeading").textContent=t.mine;
+  $("search").placeholder=t.search;
+  let c=$("catFilter").options;
+  c[0].text=t.all;
+  c[1].text=t.clothes;
+  c[2].text=t.shoes;
+  c[3].text=t.acc;
+  let fc=$("category").options;
+  fc[0].text=t.clothes;
+  fc[1].text=t.shoes;
+  fc[2].text=t.acc;
+  let s=$("sort").options;
+  s[0].text=t.new;
+  s[1].text=t.old;
+  s[2].text=t.pa;
+  s[3].text=t.pd;
+  render()
+}
+ async function load(){
+  let t=T();
+  $("list").innerHTML=`<div class="status">${t.loading}</div>`;
+  let {
+    data,
+    error
+  }
+  =await db.from("products").select("id,title,sku,category,subcategory,brand,price,image_url,tg_link,sizes").order("id",{
+    ascending:false
   });
+  if(error){
+    $("list").textContent=t.error+error.message;
+    return
+  }
+  products=data||[];
+  render()
+}
+ function render(){
+  if(!products)return;
+  let t=T(),
+  q=$("search").value.trim().toLowerCase(),
+  cat=$("catFilter").value;
+  let a=products.filter(p=>(String(p.title||"").toLowerCase().includes(q)||String(p.sku||"").toLowerCase().includes(q))&&(cat==="all"||p.category===cat));
+  let sort=$("sort").value;
+  if(sort==="old")a.sort((x,y)=>Number(x.id)-Number(y.id));
+  else if(sort==="priceAsc")a.sort((x,y)=>Number(x.price)-Number(y.price));
+  else if(sort==="priceDesc")a.sort((x,y)=>Number(y.price)-Number(x.price));
+  else a.sort((x,y)=>Number(y.id)-Number(x.id));
+  $("count").textContent=a.length;
+  $("list").replaceChildren();
+  if(!a.length){
+    let d=document.createElement("div");
+    d.className="status";
+    d.textContent=t.empty;
+    $("list").append(d);
+    return
+  }
+  a.forEach(p=>{
+    let item=document.createElement("div");item.className="item",info=document.createElement("div");info.className="info";let img=document.createElement("img");img.className="thumb";img.src=p.image_url||"";img.alt="";img.onerror=()=>img.style.visibility="hidden";let txt=document.createElement("div"),name=document.createElement("div");name.className="name";name.textContent=p.title||"—";let meta=document.createElement("div");meta.className="meta";meta.textContent=`${p.sku||"—"} · ${catName(p.category)} · ${p.brand||"—"} · ${fmtPrice(p.price)} · ${Array.isArray(p.sizes)?p.sizes.join(", "):"—"}`;txt.append(name,meta);info.append(img,txt);let acts=document.createElement("div");acts.className="item-actions";let e=document.createElement("button");e.className="btn ok";e.textContent=t.editBtn;e.onclick=()=>startEdit(p.id);let d=document.createElement("button");d.className="btn danger";d.textContent=t.del;d.onclick=()=>removeProduct(p.id);acts.append(e,d);item.append(info,acts);$("list").append(item)
+  })
+}
+ function startEdit(id){
+  let p=products.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  editingId=p.id;
+  editingImage=p.image_url||null;
+  $("title").value=p.title||"";
+  $("sku").value=p.sku||"";
+  $("category").value=p.category||"clothes";
+  subcategoryUI(p.subcategory||null);
+  $("brand").value=p.brand||"";
+  $("price").value=p.price||"";
+  $("tg").value=p.tg_link||"";
+  $("image").value="";
+  sizesUI(Array.isArray(p.sizes)?p.sizes:[]);
+  $("cancelBtn").classList.remove("hidden");
+  applyText();
+  window.scrollTo({
+    top:0,behavior:"smooth"
+  })
+}
+ function cancelEdit(){
+  editingId=null;
+  editingImage=null;
+  $("productForm").reset();
+  $("category").value="clothes";
+  subcategoryUI();
+  sizesUI();
+  $("cancelBtn").classList.add("hidden");
+  applyText()
+}
+ async function uploadImage(file){
+  let ext=(file.name.split(".").pop()||"jpg").replace(/[^a-z0-9]/gi,"");
+  let path=`${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  let {
+    error
+  }
+  =await db.storage.from("products").upload(path,file);
+  if(error)throw error;
+  return db.storage.from("products").getPublicUrl(path).data.publicUrl
+}
+ $("productForm").addEventListener("submit",async e=>{
+  e.preventDefault();let t=T(),btn=$("saveBtn");btn.disabled=true;try{
+    let file=$("image").files[0],imageUrl=editingImage;if(file)imageUrl=await uploadImage(file);if(!imageUrl){
+      alert(t.needImg);return
+    }
+    let row={
+      title:$("title").value.trim(),sku:$("sku").value.trim()||null,category:$("category").value,subcategory:$("subcategory").value||null,brand:$("brand").value.trim(),price:Number($("price").value),image_url:imageUrl,tg_link:$("tg").value.trim(),sizes:[...document.querySelectorAll("#sizes input:checked")].map(x=>x.value)
+    };let result=editingId?await db.from("products").update(row).eq("id",editingId):await db.from("products").insert([row]);if(result.error)throw result.error;alert(t.saved);cancelEdit();await load()
+  } catch(err){
+    alert(t.error+err.message)
+  } finally{
+    btn.disabled=false;applyText()
+  }
+});
+ async function removeProduct(id){
+  let t=T();
+  if(!confirm(t.confirm))return;
+  let {
+    error
+  }
+  =await db.from("products").delete().eq("id",id);
+  if(error){
+    alert(t.error+error.message);
+    return
+  }
+  alert(t.deleted);
+  if(String(editingId)===String(id))cancelEdit();
+  await load()
+}
+ subcategoryUI();
+$("category").onchange=()=>{subcategoryUI();sizesUI();};
+$("cancelBtn").onclick=cancelEdit;
+$("search").oninput=render;
+$("catFilter").onchange=render;
+$("sort").onchange=render;
+ $("lang").onchange=()=>{
+  localStorage.setItem("admin_lang",$("lang").value);
+  applyText()
+};
+$("theme").onchange=()=>{
+  localStorage.setItem("admin_theme",$("theme").value);
+  document.body.classList.toggle("light",$("theme").value==="light")
+};
+$("currency").onchange=()=>{
+  localStorage.setItem("admin_currency",$("currency").value);
+  render()
+};
+ $("lang").value=localStorage.getItem("admin_lang")||"uk";
+$("theme").value=localStorage.getItem("admin_theme")||"dark";
+$("currency").value=localStorage.getItem("admin_currency")||"UAH";
+document.body.classList.toggle("light",$("theme").value==="light");
+sizesUI();
+applyText();
+load();
+</script>
+
+<script id="namet-admin-ui-v1">
+(() => {
+  const menu=document.getElementById("menuBtn");
+  const close=document.getElementById("drawerClose");
+  const backdrop=document.getElementById("drawerBackdrop");
+  const theme=document.getElementById("theme");
+  const lang=document.getElementById("lang");
+
+  const drawerText={
+    uk:{settings:"Налаштування",language:"Мова",theme:"Тема",currency:"Валюта",dark:"Темна",grey:"Сіра",light:"Світла"},
+    ru:{settings:"Настройки",language:"Язык",theme:"Тема",currency:"Валюта",dark:"Тёмная",grey:"Серая",light:"Светлая"},
+    en:{settings:"Settings",language:"Language",theme:"Theme",currency:"Currency",dark:"Dark",grey:"Grey",light:"Light"},
+    be:{settings:"Налады",language:"Мова",theme:"Тэма",currency:"Валюта",dark:"Цёмная",grey:"Шэрая",light:"Светлая"},
+    de:{settings:"Einstellungen",language:"Sprache",theme:"Thema",currency:"Währung",dark:"Dunkel",grey:"Grau",light:"Hell"},
+    zh:{settings:"设置",language:"语言",theme:"主题",currency:"货币",dark:"深色",grey:"灰色",light:"浅色"},
+    pl:{settings:"Ustawienia",language:"Język",theme:"Motyw",currency:"Waluta",dark:"Ciemny",grey:"Szary",light:"Jasny"}
+  };
+
+  const open=()=>document.body.classList.add("drawer-open");
+  const shut=()=>document.body.classList.remove("drawer-open");
+  menu?.addEventListener("click",open);
+  close?.addEventListener("click",shut);
+  backdrop?.addEventListener("click",shut);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")shut()});
+
+  function paintTheme(){
+    const v=theme.value;
+    document.body.classList.toggle("light",v==="light");
+    document.body.classList.toggle("grey",v==="grey");
+  }
+  function paintDrawerText(){
+    const t=drawerText[lang.value]||drawerText.uk;
+    document.getElementById("drawerSettingsTitle").textContent=t.settings;
+    document.getElementById("drawerLangLabel").textContent=t.language;
+    document.getElementById("drawerThemeLabel").textContent=t.theme;
+    document.getElementById("drawerCurrencyLabel").textContent=t.currency;
+    const labels={dark:t.dark,grey:t.grey,light:t.light};
+    [...theme.options].forEach(o=>o.textContent=labels[o.value]||o.textContent);
+  }
+
+  // Existing admin code handles persistence/rendering; these listeners add the new visual layer.
+  theme.addEventListener("change",()=>{paintTheme();localStorage.setItem("admin_theme",theme.value)});
+  lang.addEventListener("change",paintDrawerText);
+
+  // Old versions only knew dark/light. Restore grey correctly after their initialization has run.
+  const saved=localStorage.getItem("admin_theme");
+  if(saved && [...theme.options].some(o=>o.value===saved)) theme.value=saved;
+  paintTheme();
+  paintDrawerText();
 })();
 </script>
 
 
-<script id="namet-filter-close-i18n-v19">
+
+
+
+<script id="namet-admin-examples-i18n-v5">
 (() => {
-  const text={
-    uk:"Закрити фільтри",ru:"Закрыть фильтр",en:"Close filters",
-    be:"Закрыць фільтр",de:"Filter schließen",zh:"关闭筛选",pl:"Zamknij filtry"
+  const EX={
+    uk:{prefix:"Наприклад",title:"Кросівки Air Jordan 1",sku:"DK96-8",category:"Одяг",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"Худі",shoes:"Кросівки",accessories:"Рюкзак"}},
+    ru:{prefix:"Например",title:"Кроссовки Air Jordan 1",sku:"DK96-8",category:"Одежда",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"Худи",shoes:"Кроссовки",accessories:"Рюкзак"}},
+    en:{prefix:"Example",title:"Air Jordan 1 sneakers",sku:"DK96-8",category:"Clothing",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"Hoodie",shoes:"Sneakers",accessories:"Backpack"}},
+    be:{prefix:"Напрыклад",title:"Красоўкі Air Jordan 1",sku:"DK96-8",category:"Адзенне",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"Худзі",shoes:"Красоўкі",accessories:"Заплечнік"}},
+    de:{prefix:"Beispiel",title:"Air Jordan 1 Sneaker",sku:"DK96-8",category:"Kleidung",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"Hoodie",shoes:"Sneaker",accessories:"Rucksack"}},
+    zh:{prefix:"例如",title:"Air Jordan 1 运动鞋",sku:"DK96-8",category:"服装",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"连帽衫",shoes:"运动鞋",accessories:"背包"}},
+    pl:{prefix:"Przykład",title:"Sneakersy Air Jordan 1",sku:"DK96-8",category:"Odzież",brand:"Nike",price:"2499",telegram:"https://t.me/your_username",sub:{clothes:"Bluza z kapturem",shoes:"Sneakersy",accessories:"Plecak"}}
   };
-  const getLang=()=>document.getElementById("languageSelect")?.value||
-    document.getElementById("langSelect")?.value||localStorage.getItem("language")||"uk";
-  const paint=()=>{
-    const b=document.getElementById("btnCloseFiltersBottom");
-    if(b)b.textContent=text[getLang()]||text.uk;
-  };
-  document.addEventListener("DOMContentLoaded",paint);
+
+  function currentLang(){
+    return document.getElementById("lang")?.value ||
+           document.getElementById("languageSelect")?.value ||
+           document.getElementById("langSelect")?.value ||
+           localStorage.getItem("adminLang") ||
+           localStorage.getItem("language") || "uk";
+  }
+  function put(id,value){
+    const el=document.getElementById(id);
+    if(el) el.textContent=value;
+  }
+  function paintExamples(){
+    const t=EX[currentLang()]||EX.uk;
+    const line=v=>`${t.prefix}: ${v}`;
+    put("exampleTitle",line(t.title));
+    put("exampleSku",line(t.sku));
+    put("exampleCategory",line(t.category));
+    put("exampleBrand",line(t.brand));
+    put("examplePrice",line(t.price));
+    put("exampleTelegram",line(t.telegram));
+    const cat=document.getElementById("category")?.value||"clothes";
+    put("subcategoryExample",line(t.sub[cat]||t.sub.clothes));
+  }
+
+  document.addEventListener("DOMContentLoaded",paintExamples);
   document.addEventListener("change",e=>{
-    if(e.target.matches("#languageSelect,#langSelect"))paint();
+    if(e.target.matches("#lang,#languageSelect,#langSelect,#category")) paintExamples();
   });
+  // Existing admin i18n may repaint synchronously, so run our example translation just after it.
+  document.addEventListener("click",e=>{
+    if(e.target.closest("[data-lang]")) setTimeout(paintExamples,0);
+  });
+  paintExamples();
 })();
 </script>
-
-
-<script id="namet-filter-real-runtime-v20">
-(() => {
-  const modal=document.getElementById("filterModal");
-  const bottom=document.getElementById("btnCloseFiltersBottom");
-  bottom?.addEventListener("click",()=>{
-    const x=modal?.querySelector('.close-btn[data-close="filterModal"]');
-    if(x) x.click();
-    else modal?.classList.remove("open");
-  });
-
-  const translations={
-    uk:"Закрити фільтр",ru:"Закрыть фильтр",en:"Close filters",
-    be:"Закрыць фільтр",de:"Filter schließen",zh:"关闭筛选",pl:"Zamknij filtry"
-  };
-  function paint(){
-    const l=document.getElementById("languageSelect")?.value||
-            document.getElementById("langSelect")?.value||
-            localStorage.getItem("language")||"uk";
-    if(bottom) bottom.textContent=translations[l]||translations.uk;
-  }
-  paint();
-  document.addEventListener("change",e=>{
-    if(e.target.matches("#languageSelect,#langSelect")) paint();
-  });
-})();
-</script>
-
-
-
 
 </body>
 </html>
