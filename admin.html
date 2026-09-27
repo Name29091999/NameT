@@ -54,25 +54,136 @@ input:focus,select:focus{border-color:var(--accent)}
 .toolbar select{width:100%}
 }
 </style>
+
+<style id="namet-admin-redesign-v1">
+:root{
+  --bg:#0f0f0f;--panel:#181818;--panel2:#121212;--text:#f1f1f1;--muted:#a7a7a7;
+  --border:#303030;--accent:#f1f1f1;--accentText:#0d0d0d;--ok:#2bb34a;--danger:#ef5350;
+  --shadow:0 18px 55px rgba(0,0,0,.22)
+}
+body.light{--bg:#f4f4f4;--panel:#fff;--panel2:#f8f8f8;--text:#111;--muted:#6f6f6f;--border:#dedede;--accent:#111;--accentText:#fff;--shadow:0 18px 55px rgba(0,0,0,.08)}
+body.grey{--bg:#262626;--panel:#333;--panel2:#2b2b2b;--text:#f3f3f3;--muted:#bdbdbd;--border:#4a4a4a;--accent:#f1f1f1;--accentText:#111;--shadow:0 18px 55px rgba(0,0,0,.18)}
+html{scroll-behavior:smooth}
+body{background:var(--bg);transition:background .28s ease,color .28s ease}
+.namet-admin-header{
+  position:relative!important;z-index:20;padding:0 24px!important;height:72px;background:var(--panel)!important;
+  border-bottom:1px solid var(--border)!important;display:flex!important;justify-content:flex-start!important;
+  align-items:center!important;gap:18px!important;transition:.28s ease
+}
+.menu-btn{width:38px;height:38px;border:0;background:transparent;display:flex;flex-direction:column;justify-content:center;gap:5px;cursor:pointer;padding:7px;border-radius:10px;transition:.2s ease}
+.menu-btn:hover{background:var(--panel2);transform:scale(1.04)}
+.menu-btn span{display:block;width:23px;height:2px;background:var(--text);border-radius:9px;transition:.25s ease}
+.admin-brand{display:flex;align-items:baseline;gap:13px;letter-spacing:.02em}
+.admin-brand strong{font-size:24px;letter-spacing:.12em;background:linear-gradient(90deg,#fff,#888,#fff);background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:adminShine 5s linear infinite}
+body.light .admin-brand strong{background:linear-gradient(90deg,#111,#888,#111);background-size:220% auto;-webkit-background-clip:text;background-clip:text}
+.admin-brand #headTitle{font-size:14px;color:var(--muted);font-weight:650}
+@keyframes adminShine{to{background-position:220% center}}
+
+.drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.48);opacity:0;visibility:hidden;transition:.28s ease;z-index:90;backdrop-filter:blur(2px)}
+.settings-drawer{position:fixed;z-index:100;left:0;top:0;height:100vh;width:min(390px,88vw);background:var(--panel);border-right:1px solid var(--border);box-shadow:var(--shadow);transform:translateX(-105%);transition:transform .34s cubic-bezier(.2,.8,.2,1),background .28s ease;padding:22px}
+body.drawer-open .drawer-backdrop{opacity:1;visibility:visible}
+body.drawer-open .settings-drawer{transform:translateX(0)}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.drawer-head>div{display:flex;flex-direction:column;gap:5px}.drawer-head strong{font-size:24px;letter-spacing:.1em}.drawer-head span{color:var(--muted);font-size:13px}
+.drawer-close{width:38px;height:38px;border:1px solid var(--border);border-radius:50%;background:transparent;color:var(--text);font-size:25px;cursor:pointer;transition:.2s}
+.drawer-close:hover{transform:rotate(90deg);background:var(--panel2)}
+.drawer-body.settings{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:22px!important;padding-top:24px}
+.drawer-field{display:flex;flex-direction:column;gap:9px;color:var(--muted);font-size:13px;font-weight:650}
+.drawer-field select{width:100%!important;background:var(--panel2);padding:13px 14px}
+
+.wrap{max-width:1120px!important;margin:34px auto!important;padding:0 20px!important}
+.panel{background:var(--panel)!important;border:1px solid var(--border)!important;border-radius:18px!important;padding:28px!important;margin-bottom:24px!important;box-shadow:0 1px 0 rgba(255,255,255,.015);transition:background .28s ease,border .28s ease,transform .25s ease}
+.section-kicker{font-size:10px;letter-spacing:.22em;color:var(--muted);margin-bottom:8px}
+h2{font-size:23px;letter-spacing:-.02em}
+.grid2{gap:18px!important}
+.field{gap:8px!important}
+label{font-size:13px!important;font-weight:650;color:var(--muted)!important}
+input,select{background:var(--panel2)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:11px!important;padding:13px 14px!important;transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease,background .28s ease}
+input:hover,select:hover{border-color:color-mix(in srgb,var(--border),var(--text) 20%)!important}
+input:focus,select:focus{border-color:var(--text)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--text) 9%,transparent)!important}
+input[type=file]{padding:10px!important}
+.btn{border-radius:11px!important;padding:12px 16px!important;transition:transform .18s ease,background .18s ease,border-color .18s ease,opacity .18s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0) scale(.985)}
+.primary{background:var(--text)!important;color:var(--bg)!important;border-color:var(--text)!important}
+.primary:hover{opacity:.88}
+.actions .primary{min-width:220px}
+.danger{color:#ff6666!important}.ok{color:#66d47b!important}
+
+/* Full tile selection: checkbox exists for functionality, but no checkbox mark is shown. */
+.sizes{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:10px!important}
+.size{position:relative;display:flex;align-items:center;justify-content:center;min-height:46px;border:1px solid var(--border)!important;border-radius:11px!important;padding:10px 12px!important;background:var(--panel2);color:var(--text);font-weight:750;cursor:pointer;user-select:none;transition:.18s ease}
+.size:hover{transform:translateY(-2px);border-color:var(--muted)!important}
+.size input{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important}
+.size:has(input:checked){background:var(--text)!important;border-color:var(--text)!important;color:var(--bg)!important;box-shadow:0 7px 22px rgba(0,0,0,.15);transform:translateY(-1px)}
+
+.toolbar{gap:10px!important;margin:18px 0!important}
+.toolbar input,.toolbar select{min-height:46px}
+.item{background:var(--panel2);border-radius:14px!important;padding:14px!important;transition:.2s ease}
+.item:hover{transform:translateY(-2px);border-color:var(--muted)!important}
+.thumb{width:70px!important;height:70px!important;border-radius:11px!important}
+.name{font-size:15px}.meta{line-height:1.55!important}
+.status{padding:26px!important}
+.count{color:var(--muted)!important}
+
+@media(max-width:700px){
+ .namet-admin-header{height:64px;padding:0 15px!important;flex-direction:row!important;align-items:center!important}
+ .admin-brand strong{font-size:20px}.admin-brand #headTitle{font-size:12px}
+ .wrap{margin:18px auto!important;padding:0 12px!important}
+ .panel{padding:18px!important;border-radius:15px!important}
+ .sizes{grid-template-columns:repeat(4,1fr)!important}
+ .actions .primary{width:100%;min-width:0}
+}
+</style>
+
+
+<style id="namet-admin-v2-fields">
+.field-example{
+  display:block;margin-top:1px;padding-left:2px;
+  color:var(--muted);opacity:.68;font-size:11.5px;line-height:1.35;
+  font-weight:500;transition:opacity .2s ease;
+}
+.field:focus-within .field-example{opacity:.95}
+</style>
+
 </head>
 <body>
-<header>
-  <h1 id="headTitle">Адмін-панель</h1>
-  <div class="settings">
-    <select id="lang"><option value="uk">Українська</option><option value="ru">Русский</option><option value="en">English</option><option value="be">Беларуская</option><option value="de">Deutsch</option><option value="zh">中文</option><option value="pl">Polski</option></select>
-    <select id="theme"><option value="dark">🌙</option><option value="light">☀️</option></select>
-    <select id="currency"><option value="UAH">UAH</option><option value="USD">USD</option></select>
-  </div>
+<header class="namet-admin-header">
+  <button class="menu-btn" id="menuBtn" type="button" aria-label="Menu"><span></span><span></span><span></span></button>
+  <div class="admin-brand"><strong>NameT</strong><span id="headTitle">Адмін-панель</span></div>
 </header>
 
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="settings-drawer" id="settingsDrawer">
+  <div class="drawer-head">
+    <div><strong>NameT</strong><span id="drawerSettingsTitle">Налаштування</span></div>
+    <button id="drawerClose" class="drawer-close" type="button">×</button>
+  </div>
+  <div class="drawer-body settings">
+    <label class="drawer-field"><span id="drawerLangLabel">Мова</span>
+      <select id="lang"><option value="uk">Українська</option><option value="ru">Русский</option><option value="en">English</option><option value="be">Беларуская</option><option value="de">Deutsch</option><option value="zh">中文</option><option value="pl">Polski</option></select>
+    </label>
+    <label class="drawer-field"><span id="drawerThemeLabel">Тема</span>
+      <select id="theme"><option value="dark">Темна</option><option value="grey">Сіра</option><option value="light">Світла</option></select>
+    </label>
+    <label class="drawer-field"><span id="drawerCurrencyLabel">Валюта</span>
+      <select id="currency"><option value="UAH">UAH ₴</option><option value="USD">USD $</option></select>
+    </label>
+  </div>
+</aside>
+
 <main class="wrap">
-<section class="panel">
-  <h2 id="formHeading">Додати товар</h2><br>
+<section class="panel form-panel">
+  <div class="section-kicker">NAMET / ADMIN</div><h2 id="formHeading">Додати товар</h2><br>
   <form id="productForm">
     <div class="grid2">
-      <div class="field"><label id="lTitle">Назва *</label><input id="title" required></div>
-      <div class="field"><label id="lSku">Артикул</label><input id="sku"></div>
+      <div class="field"><label id="lTitle">Назва *</label><input id="title" required><small class="field-example" id="titleExample">Наприклад: Кросівки Air Jordan</small></div>
+      <div class="field"><label id="lSku">Артикул</label><input id="sku"><small class="field-example" id="skuExample">Наприклад: DK96-8</small></div>
       <div class="field"><label id="lCat">Категорія *</label><select id="category"><option value="clothes">Одяг</option><option value="shoes">Взуття</option><option value="accessories">Аксесуари</option></select></div>
+      <div class="field"><label id="lSubcat">Підкатегорія *</label>
+        <select id="subcategory" required></select>
+        <small class="field-example" id="subcatExample">Наприклад: Одяг → Худі</small>
+      </div>
       <div class="field">
         <label id="lBrand">Бренд *</label>
         <select id="brand" required>
@@ -115,6 +226,113 @@ input:focus,select:focus{border-color:var(--accent)}
   <div id="list" class="list"><div class="status">Завантаження...</div></div>
 </section>
 </main>
+
+
+<script id="namet-admin-subcategories-v2">
+const SUBCATEGORIES={
+  clothes:[
+    ["hoodies","Худі","Худи","Hoodies","Худзі","Hoodies","连帽衫","Bluzy z kapturem"],
+    ["sweatshirts","Світшоти","Свитшоты","Sweatshirts","Світшоты","Sweatshirts","卫衣","Bluzy"],
+    ["sweaters","Кофти","Кофты","Sweaters","Кофты","Pullover","毛衣","Swetry"],
+    ["tshirts","Футболки","Футболки","T-shirts","Футболкі","T-Shirts","T恤","T-shirty"],
+    ["shirts","Сорочки","Рубашки","Shirts","Кашулі","Hemden","衬衫","Koszule"],
+    ["pants","Штани","Штаны","Pants","Штаны","Hosen","裤子","Spodnie"],
+    ["jeans","Джинси","Джинсы","Jeans","Джынсы","Jeans","牛仔裤","Jeansy"],
+    ["shorts","Шорти","Шорты","Shorts","Шорты","Shorts","短裤","Szorty"],
+    ["jackets","Куртки","Куртки","Jackets","Курткі","Jacken","夹克","Kurtki"],
+    ["coats","Пальта","Пальто","Coats","Паліто","Mäntel","大衣","Płaszcze"],
+    ["dresses","Сукні","Платья","Dresses","Сукенкі","Kleider","连衣裙","Sukienki"],
+    ["skirts","Спідниці","Юбки","Skirts","Спадніцы","Röcke","半身裙","Spódnice"],
+    ["underwear","Білизна","Бельё","Underwear","Бялізна","Unterwäsche","内衣","Bielizna"]
+  ],
+  shoes:[
+    ["sneakers","Кросівки","Кроссовки","Sneakers","Красоўкі","Sneaker","运动鞋","Sneakersy"],
+    ["boots","Черевики","Ботинки","Boots","Чаравікі","Stiefel","靴子","Buty"],
+    ["sandals","Босоніжки","Босоножки","Sandals","Басаножкі","Sandalen","凉鞋","Sandały"],
+    ["slippers","Капці","Тапочки","Slippers","Тапачкі","Hausschuhe","拖鞋","Kapcie"],
+    ["loafers","Лофери","Лоферы","Loafers","Лоферы","Loafer","乐福鞋","Mokasyny"],
+    ["shoes_classic","Туфлі","Туфли","Shoes","Туфлі","Schuhe","皮鞋","Półbuty"]
+  ],
+  accessories:[
+    ["bags","Сумки","Сумки","Bags","Сумкі","Taschen","包","Torby"],
+    ["backpacks","Рюкзаки","Рюкзаки","Backpacks","Заплечнікі","Rucksäcke","背包","Plecaki"],
+    ["caps","Кепки","Кепки","Caps","Кепкі","Caps","帽子","Czapki"],
+    ["belts","Ремені","Ремни","Belts","Рамяні","Gürtel","腰带","Paski"],
+    ["glasses","Окуляри","Очки","Glasses","Акуляры","Brillen","眼镜","Okulary"],
+    ["wallets","Гаманці","Кошельки","Wallets","Кашалькі","Geldbörsen","钱包","Portfele"]
+  ]
+};
+const SUB_LANG={uk:1,ru:2,en:3,be:4,de:5,zh:6,pl:7};
+function subcatLabel(value){
+  const lang=(document.getElementById("lang")||{}).value||"uk";
+  const idx=SUB_LANG[lang]||1;
+  for(const group of Object.values(SUBCATEGORIES)){
+    const row=group.find(x=>x[0]===value);
+    if(row)return row[idx]||row[1];
+  }
+  return value||"—";
+}
+function updateSubcategories(preferred=""){
+  const cat=document.getElementById("category");
+  const sel=document.getElementById("subcategory");
+  if(!cat||!sel)return;
+  const current=preferred||sel.value;
+  const idx=SUB_LANG[(document.getElementById("lang")||{}).value]||1;
+  const rows=SUBCATEGORIES[cat.value]||[];
+  sel.replaceChildren();
+  rows.forEach(row=>{
+    const o=document.createElement("option");
+    o.value=row[0];o.textContent=row[idx]||row[1];
+    sel.appendChild(o);
+  });
+  if(rows.some(r=>r[0]===current))sel.value=current;
+  updateSubExample();
+}
+function updateSubExample(){
+  const el=document.getElementById("subcatExample");
+  const cat=document.getElementById("category");
+  const sel=document.getElementById("subcategory");
+  if(!el||!cat||!sel)return;
+  const lang=(document.getElementById("lang")||{}).value||"uk";
+  const examples={
+    uk:"Наприклад",ru:"Например",en:"Example",be:"Напрыклад",
+    de:"Beispiel",zh:"例如",pl:"Przykład"
+  };
+  const catNames={
+    uk:{clothes:"Одяг",shoes:"Взуття",accessories:"Аксесуари"},
+    ru:{clothes:"Одежда",shoes:"Обувь",accessories:"Аксессуары"},
+    en:{clothes:"Clothing",shoes:"Footwear",accessories:"Accessories"},
+    be:{clothes:"Адзенне",shoes:"Абутак",accessories:"Аксэсуары"},
+    de:{clothes:"Kleidung",shoes:"Schuhe",accessories:"Accessoires"},
+    zh:{clothes:"服装",shoes:"鞋履",accessories:"配饰"},
+    pl:{clothes:"Odzież",shoes:"Obuwie",accessories:"Akcesoria"}
+  };
+  el.textContent=`${examples[lang]||examples.uk}: ${(catNames[lang]||catNames.uk)[cat.value]} → ${subcatLabel(sel.value)}`;
+}
+function updateExamplesLanguage(){
+  const lang=(document.getElementById("lang")||{}).value||"uk";
+  const title={
+    uk:"Наприклад: Кросівки Air Jordan",ru:"Например: Кроссовки Air Jordan",en:"Example: Air Jordan sneakers",
+    be:"Напрыклад: Красоўкі Air Jordan",de:"Beispiel: Air Jordan Sneaker",zh:"例如：Air Jordan 运动鞋",pl:"Przykład: Sneakersy Air Jordan"
+  };
+  const sku={
+    uk:"Наприклад: DK96-8",ru:"Например: DK96-8",en:"Example: DK96-8",
+    be:"Напрыклад: DK96-8",de:"Beispiel: DK96-8",zh:"例如：DK96-8",pl:"Przykład: DK96-8"
+  };
+  document.getElementById("titleExample").textContent=title[lang]||title.uk;
+  document.getElementById("skuExample").textContent=sku[lang]||sku.uk;
+  const label={uk:"Підкатегорія *",ru:"Подкатегория *",en:"Subcategory *",be:"Падкатэгорыя *",de:"Unterkategorie *",zh:"子分类 *",pl:"Podkategoria *"};
+  document.getElementById("lSubcat").textContent=label[lang]||label.uk;
+  const keep=document.getElementById("subcategory").value;
+  updateSubcategories(keep);
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  updateSubcategories();
+  updateExamplesLanguage();
+  document.getElementById("subcategory")?.addEventListener("change",updateSubExample);
+  document.getElementById("lang")?.addEventListener("change",updateExamplesLanguage);
+});
+</script>
 
 <script>
 const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
@@ -463,7 +681,7 @@ const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
     data,
     error
   }
-  =await db.from("products").select("id,title,sku,category,brand,price,image_url,tg_link,sizes").order("id",{
+  =await db.from("products").select("id,title,sku,category,subcategory,brand,price,image_url,tg_link,sizes").order("id",{
     ascending:false
   });
   if(error){
@@ -494,7 +712,7 @@ const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
     return
   }
   a.forEach(p=>{
-    let item=document.createElement("div");item.className="item",info=document.createElement("div");info.className="info";let img=document.createElement("img");img.className="thumb";img.src=p.image_url||"";img.alt="";img.onerror=()=>img.style.visibility="hidden";let txt=document.createElement("div"),name=document.createElement("div");name.className="name";name.textContent=p.title||"—";let meta=document.createElement("div");meta.className="meta";meta.textContent=`${p.sku||"—"} · ${catName(p.category)} · ${p.brand||"—"} · ${fmtPrice(p.price)} · ${Array.isArray(p.sizes)?p.sizes.join(", "):"—"}`;txt.append(name,meta);info.append(img,txt);let acts=document.createElement("div");acts.className="item-actions";let e=document.createElement("button");e.className="btn ok";e.textContent=t.editBtn;e.onclick=()=>startEdit(p.id);let d=document.createElement("button");d.className="btn danger";d.textContent=t.del;d.onclick=()=>removeProduct(p.id);acts.append(e,d);item.append(info,acts);$("list").append(item)
+    let item=document.createElement("div");item.className="item",info=document.createElement("div");info.className="info";let img=document.createElement("img");img.className="thumb";img.src=p.image_url||"";img.alt="";img.onerror=()=>img.style.visibility="hidden";let txt=document.createElement("div"),name=document.createElement("div");name.className="name";name.textContent=p.title||"—";let meta=document.createElement("div");meta.className="meta";meta.textContent=`${p.sku||"—"} · ${catName(p.category)}${p.subcategory?" → "+subcatLabel(p.subcategory):""} · ${p.brand||"—"} · ${fmtPrice(p.price)} · ${Array.isArray(p.sizes)?p.sizes.join(", "):"—"}`;txt.append(name,meta);info.append(img,txt);let acts=document.createElement("div");acts.className="item-actions";let e=document.createElement("button");e.className="btn ok";e.textContent=t.editBtn;e.onclick=()=>startEdit(p.id);let d=document.createElement("button");d.className="btn danger";d.textContent=t.del;d.onclick=()=>removeProduct(p.id);acts.append(e,d);item.append(info,acts);$("list").append(item)
   })
 }
  function startEdit(id){
@@ -541,7 +759,7 @@ const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
       alert(t.needImg);return
     }
     let row={
-      title:$("title").value.trim(),sku:$("sku").value.trim()||null,category:$("category").value,brand:$("brand").value.trim(),price:Number($("price").value),image_url:imageUrl,tg_link:$("tg").value.trim(),sizes:[...document.querySelectorAll("#sizes input:checked")].map(x=>x.value)
+      title:$("title").value.trim(),sku:$("sku").value.trim()||null,category:$("category").value,subcategory:$("subcategory").value||null,brand:$("brand").value.trim(),price:Number($("price").value),image_url:imageUrl,tg_link:$("tg").value.trim(),sizes:[...document.querySelectorAll("#sizes input:checked")].map(x=>x.value)
     };let result=editingId?await db.from("products").update(row).eq("id",editingId):await db.from("products").insert([row]);if(result.error)throw result.error;alert(t.saved);cancelEdit();await load()
   } catch(err){
     alert(t.error+err.message)
@@ -564,7 +782,7 @@ const SUPABASE_URL = "https://vqhcklzlfuuiqxpchrql.supabase.co";
   if(String(editingId)===String(id))cancelEdit();
   await load()
 }
- $("category").onchange=()=>sizesUI();
+ $("category").onchange=()=>{sizesUI();updateSubcategories();};
 $("cancelBtn").onclick=cancelEdit;
 $("search").oninput=render;
 $("catFilter").onchange=render;
@@ -589,5 +807,58 @@ sizesUI();
 applyText();
 load();
 </script>
+
+<script id="namet-admin-ui-v1">
+(() => {
+  const menu=document.getElementById("menuBtn");
+  const close=document.getElementById("drawerClose");
+  const backdrop=document.getElementById("drawerBackdrop");
+  const theme=document.getElementById("theme");
+  const lang=document.getElementById("lang");
+
+  const drawerText={
+    uk:{settings:"Налаштування",language:"Мова",theme:"Тема",currency:"Валюта",dark:"Темна",grey:"Сіра",light:"Світла"},
+    ru:{settings:"Настройки",language:"Язык",theme:"Тема",currency:"Валюта",dark:"Тёмная",grey:"Серая",light:"Светлая"},
+    en:{settings:"Settings",language:"Language",theme:"Theme",currency:"Currency",dark:"Dark",grey:"Grey",light:"Light"},
+    be:{settings:"Налады",language:"Мова",theme:"Тэма",currency:"Валюта",dark:"Цёмная",grey:"Шэрая",light:"Светлая"},
+    de:{settings:"Einstellungen",language:"Sprache",theme:"Thema",currency:"Währung",dark:"Dunkel",grey:"Grau",light:"Hell"},
+    zh:{settings:"设置",language:"语言",theme:"主题",currency:"货币",dark:"深色",grey:"灰色",light:"浅色"},
+    pl:{settings:"Ustawienia",language:"Język",theme:"Motyw",currency:"Waluta",dark:"Ciemny",grey:"Szary",light:"Jasny"}
+  };
+
+  const open=()=>document.body.classList.add("drawer-open");
+  const shut=()=>document.body.classList.remove("drawer-open");
+  menu?.addEventListener("click",open);
+  close?.addEventListener("click",shut);
+  backdrop?.addEventListener("click",shut);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")shut()});
+
+  function paintTheme(){
+    const v=theme.value;
+    document.body.classList.toggle("light",v==="light");
+    document.body.classList.toggle("grey",v==="grey");
+  }
+  function paintDrawerText(){
+    const t=drawerText[lang.value]||drawerText.uk;
+    document.getElementById("drawerSettingsTitle").textContent=t.settings;
+    document.getElementById("drawerLangLabel").textContent=t.language;
+    document.getElementById("drawerThemeLabel").textContent=t.theme;
+    document.getElementById("drawerCurrencyLabel").textContent=t.currency;
+    const labels={dark:t.dark,grey:t.grey,light:t.light};
+    [...theme.options].forEach(o=>o.textContent=labels[o.value]||o.textContent);
+  }
+
+  // Existing admin code handles persistence/rendering; these listeners add the new visual layer.
+  theme.addEventListener("change",()=>{paintTheme();localStorage.setItem("admin_theme",theme.value)});
+  lang.addEventListener("change",paintDrawerText);
+
+  // Old versions only knew dark/light. Restore grey correctly after their initialization has run.
+  const saved=localStorage.getItem("admin_theme");
+  if(saved && [...theme.options].some(o=>o.value===saved)) theme.value=saved;
+  paintTheme();
+  paintDrawerText();
+})();
+</script>
+
 </body>
 </html>
