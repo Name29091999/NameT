@@ -1,1 +1,1090 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark light">
+  <title>Одяг Premium Взуття</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-color: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-color: #38bdf8;
+      --border-color: #334155;
+      --success-color: #22c55e;
+      --danger-color: #ef4444;
+    }
 
+    body.light-theme {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-color: #0f172a;
+      --text-muted: #64748b;
+      --accent-color: #0284c7;
+      --border-color: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color .25s, color .25s;
+    }
+
+    body.modal-open { overflow: hidden; }
+
+    header {
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      border-bottom: 1px solid var(--border-color);
+      background-color: var(--card-bg);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      color: var(--accent-color);
+    }
+
+    .header-btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-action:hover { background-color: var(--border-color); }
+
+    .container {
+      max-width: 1200px;
+      margin: 25px auto;
+      padding: 0 20px;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    input, select {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      width: 100%;
+    }
+
+    input:focus, select:focus { border-color: var(--accent-color); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .product-image, .image-placeholder {
+      width: 100%;
+      height: 260px;
+      object-fit: cover;
+      background-color: #0b1120;
+    }
+
+    .image-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 42px;
+    }
+
+    .card-body {
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 6px;
+      overflow-wrap: anywhere;
+    }
+
+    .card-sku {
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-bottom: 7px;
+      overflow-wrap: anywhere;
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .card-price {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent-color);
+      margin-bottom: 12px;
+    }
+
+    .sizes-list {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .size-tag {
+      background-color: var(--border-color);
+      font-size: 11px;
+      padding: 3px 7px;
+      border-radius: 4px;
+    }
+
+    .btn-buy {
+      margin-top: auto;
+      background-color: var(--accent-color);
+      color: #000;
+      text-decoration: none;
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: block;
+    }
+
+    .btn-buy.disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      padding: 18px;
+      background: rgba(0,0,0,.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal.open { display: flex; }
+
+    .modal-content {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 25px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .close-btn {
+      cursor: pointer;
+      font-size: 26px;
+      line-height: 1;
+      color: var(--text-muted);
+      background: none;
+      border: 0;
+    }
+
+    .filter-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed var(--border-color);
+    }
+
+    .filter-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-color);
+    }
+
+    .price-inputs { display: flex; gap: 10px; }
+
+    .size-column-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      background-color: rgba(0,0,0,.15);
+    }
+
+    .size-column-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .size-column-item input[type="checkbox"] {
+      width: auto;
+      cursor: pointer;
+    }
+
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .filter-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    .filter-action {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .filter-apply { color: var(--success-color); }
+    .filter-reset { color: var(--danger-color); }
+    .filter-apply:hover { border-color: var(--success-color); }
+    .filter-reset:hover { border-color: var(--danger-color); }
+
+    .empty-msg {
+      text-align: center;
+      color: var(--text-muted);
+      grid-column: 1 / -1;
+      padding: 40px;
+    }
+
+    .retry-btn {
+      margin-top: 12px;
+      width: auto;
+      color: var(--text-color);
+      cursor: pointer;
+    }
+
+    @media (max-width: 650px) {
+      header {
+        padding: 14px 16px;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .header-btns { width: 100%; }
+      .header-btns .btn-action { flex: 1; justify-content: center; }
+      .container { padding: 0 14px; margin-top: 18px; }
+      .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+      .modal { padding: 10px; }
+      .modal-content { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="siteTitle">Одяг Premium Взуття</h1>
+    <div class="header-btns">
+      <button class="btn-action" id="btnFilters" type="button">🔍 Фільтри</button>
+      <button class="btn-action" id="btnSettings" type="button">⚙️ Налаштування</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="search-bar">
+      <input type="search" id="searchInput" autocomplete="off" placeholder="Пошук за назвою або артикулом...">
+    </div>
+    <div class="grid" id="productsGrid" aria-live="polite">
+      <div class="empty-msg" id="msgLoading">Завантаження...</div>
+    </div>
+  </main>
+
+  <div class="modal" id="filterModal" role="dialog" aria-modal="true" aria-labelledby="titleFilter">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="titleFilter">Фільтри товарів</span>
+        <button class="close-btn" type="button" data-close="filterModal" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-label" id="secCat">Категорія:</span>
+        <select id="categorySelect">
+          <option value="all" id="optAllCat">Усі категорії</option>
+          <option value="clothes" id="optClothes">Одяг</option>
+          <option value="shoes" id="optShoes">Взуття</option>
+          <option value="accessories" id="optAcc">Аксесуари</option>
+        </select>
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-label" id="lblBrand">Бренд:</span>
+        <select id="brandSelect">
+          <option value="all" id="optAllBrands">Усі бренди</option>
+          <option>Nike</option><option>Adidas</option><option>Puma</option><option>Reebok</option>
+          <option>New Balance</option><option>Jordan</option><option>Under Armour</option>
+          <option>Stone Island</option><option>The North Face</option><option>Tommy Hilfiger</option>
+          <option>Calvin Klein</option><option>Gucci</option><option>Balenciaga</option><option>Zara</option>
+          <option value="Інше" id="optOtherBrand">Інше</option>
+        </select>
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-label" id="secPrice">Ціна:</span>
+        <div class="price-inputs">
+          <input type="number" id="priceFrom" min="0" step="1" placeholder="Від">
+          <input type="number" id="priceTo" min="0" step="1" placeholder="До">
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-label" id="secSize">Розміри:</span>
+        <div class="size-column-container" id="sizesColumnList"></div>
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-label" id="lblSort">Сортування:</span>
+        <select id="sortSelect">
+          <option value="default" id="optNew">Спочатку нові</option>
+          <option value="price_asc" id="optAsc">Від дешевих до дорогих</option>
+          <option value="price_desc" id="optDesc">Від дорогих до дешевих</option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button class="filter-action filter-apply" id="btnApplyFilter" type="button">✓ Застосувати</button>
+        <button class="filter-action filter-reset" id="btnResetFilter" type="button">↺ Скинути</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="titleSettings">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="titleSettings">Налаштування сайту</span>
+        <button class="close-btn" type="button" data-close="settingsModal" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="setting-item">
+        <span id="lblLang">Мова:</span>
+        <select id="langSelect" style="width:auto">
+          <option value="uk">Українська</option>
+          <option value="ru">Русский</option>
+          <option value="en">English</option>
+          <option value="be">Беларуская</option>
+          <option value="de">Deutsch</option>
+          <option value="zh">中文</option>
+          <option value="pl">Polski</option>
+        </select>
+      </div>
+
+      <div class="setting-item">
+        <span id="lblTheme">Тема:</span>
+        <select id="themeSelect" style="width:auto">
+          <option value="dark" id="optDark">Темна</option>
+          <option value="light" id="optLight">Світла</option>
+        </select>
+      </div>
+
+      <div class="setting-item">
+        <span id="lblCurrency">Валюта:</span>
+        <select id="currencySelect" style="width:auto">
+          <option value="UAH">грн (UAH)</option>
+          <option value="USD">$ (USD)</option>
+        </select>
+      </div>
+
+      <button class="btn-buy" id="btnCloseSettings" type="button">Закрити</button>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://otsvxfzwnyfgflidzgwn.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_6MxlwlYqIEd_BVXCNN1Kwg_291v8xKz";
+
+    // Базовая цена товара хранится в UAH.
+    // Для изменения статического курса достаточно поменять одно число.
+    const UAH_PER_USD = 43.68;
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let allProducts = [];
+    let searchTimer = null;
+
+    const CLOTHES_SIZES = ["XXS","XS","S","M","L","XL","XXL","3XL","4XL","One Size"];
+    const SHOE_SIZES = ["35","35.5","36","36.5","37","37.5","38","38.5","39","39.5","40","40.5","41","41.5","42","42.5","43","43.5","44","44.5","45","45.5","46","46.5"];
+
+    const translations = {
+      uk: {
+        siteTitle: "Одяг Premium Взуття",
+        btnFilters: "🔍 Фільтри", btnSettings: "⚙️ Налаштування",
+        searchPlaceholder: "Пошук за назвою або артикулом...",
+        titleFilter: "Фільтри товарів", secCat: "Категорія:",
+        optAllCat: "Усі категорії", optClothes: "Одяг", optShoes: "Взуття", optAcc: "Аксесуари",
+        lblBrand: "Бренд:", optAllBrands: "Усі бренди", optOtherBrand: "Інше",
+        secPrice: "Ціна:", pFrom: "Від", pTo: "До", secSize: "Розміри:",
+        lblSort: "Сортування:", optNew: "Спочатку нові",
+        optAsc: "Від дешевих до дорогих", optDesc: "Від дорогих до дешевих",
+        btnApplyFilter: "✓ Застосувати", btnResetFilter: "↺ Скинути фільтри",
+        titleSettings: "Налаштування сайту", lblLang: "Мова:", lblTheme: "Тема:",
+        optDark: "Темна", optLight: "Світла", lblCurrency: "Валюта:",
+        btnCloseSettings: "Закрити", buyBtn: "Купити в Telegram",
+        unavailableBtn: "Посилання недоступне", brandLbl: "Бренд", catLbl: "Категорія",
+        skuLbl: "Артикул", sizesLbl: "Розміри", emptyMsg: "Товари не знайдені",
+        loading: "Завантаження...", loadError: "Не вдалося завантажити каталог.",
+        retry: "Спробувати ще раз", noImage: "Фото відсутнє",
+        catClothes: "Одяг", catShoes: "Взуття", catAccessories: "Аксесуари"
+      },
+      ru: {
+        siteTitle: "Одежда Premium Обувь",
+        btnFilters: "🔍 Фильтры", btnSettings: "⚙️ Настройки",
+        searchPlaceholder: "Поиск по названию или артикулу...",
+        titleFilter: "Фильтры товаров", secCat: "Категория:",
+        optAllCat: "Все категории", optClothes: "Одежда", optShoes: "Обувь", optAcc: "Аксессуары",
+        lblBrand: "Бренд:", optAllBrands: "Все бренды", optOtherBrand: "Другое",
+        secPrice: "Цена:", pFrom: "От", pTo: "До", secSize: "Размеры:",
+        lblSort: "Сортировка:", optNew: "Сначала новые",
+        optAsc: "От дешёвых к дорогим", optDesc: "От дорогих к дешёвым",
+        btnApplyFilter: "✓ Применить", btnResetFilter: "↺ Сбросить фильтры",
+        titleSettings: "Настройки сайта", lblLang: "Язык:", lblTheme: "Тема:",
+        optDark: "Тёмная", optLight: "Светлая", lblCurrency: "Валюта:",
+        btnCloseSettings: "Закрыть", buyBtn: "Купить в Telegram",
+        unavailableBtn: "Ссылка недоступна", brandLbl: "Бренд", catLbl: "Категория",
+        skuLbl: "Артикул", sizesLbl: "Размеры", emptyMsg: "Товары не найдены",
+        loading: "Загрузка...", loadError: "Не удалось загрузить каталог.",
+        retry: "Попробовать ещё раз", noImage: "Фото отсутствует",
+        catClothes: "Одежда", catShoes: "Обувь", catAccessories: "Аксессуары"
+      },
+      en: {
+        siteTitle: "Premium Clothing & Footwear",
+        btnFilters: "🔍 Filters", btnSettings: "⚙️ Settings",
+        searchPlaceholder: "Search by name or SKU...",
+        titleFilter: "Product filters", secCat: "Category:",
+        optAllCat: "All categories", optClothes: "Clothing", optShoes: "Footwear", optAcc: "Accessories",
+        lblBrand: "Brand:", optAllBrands: "All brands", optOtherBrand: "Other",
+        secPrice: "Price:", pFrom: "From", pTo: "To", secSize: "Sizes:",
+        lblSort: "Sort:", optNew: "Newest first",
+        optAsc: "Price: low to high", optDesc: "Price: high to low",
+        btnApplyFilter: "✓ Apply", btnResetFilter: "↺ Reset filters",
+        titleSettings: "Site settings", lblLang: "Language:", lblTheme: "Theme:",
+        optDark: "Dark", optLight: "Light", lblCurrency: "Currency:",
+        btnCloseSettings: "Close", buyBtn: "Buy on Telegram",
+        unavailableBtn: "Link unavailable", brandLbl: "Brand", catLbl: "Category",
+        skuLbl: "SKU", sizesLbl: "Sizes", emptyMsg: "No products found",
+        loading: "Loading...", loadError: "Failed to load the catalog.",
+        retry: "Try again", noImage: "No image",
+        catClothes: "Clothing", catShoes: "Footwear", catAccessories: "Accessories"
+      },
+      be: {
+        siteTitle: "Прэміум Адзенне і Абутак",
+        btnFilters: "🔍 Фільтры", btnSettings: "⚙️ Налады",
+        searchPlaceholder: "Пошук па назве або артыкуле...",
+        titleFilter: "Фільтры тавараў", secCat: "Катэгорыя:",
+        optAllCat: "Усе катэгорыі", optClothes: "Адзенне", optShoes: "Абутак", optAcc: "Аксэсуары",
+        lblBrand: "Брэнд:", optAllBrands: "Усе брэнды", optOtherBrand: "Іншае",
+        secPrice: "Цана:", pFrom: "Ад", pTo: "Да", secSize: "Памеры:",
+        lblSort: "Сартаванне:", optNew: "Спачатку новыя",
+        optAsc: "Ад танных да дарагіх", optDesc: "Ад дарагіх да танных",
+        btnApplyFilter: "✓ Ужыць", btnResetFilter: "↺ Скінуць фільтры",
+        titleSettings: "Налады сайта", lblLang: "Мова:", lblTheme: "Тэма:",
+        optDark: "Цёмная", optLight: "Светлая", lblCurrency: "Валюта:",
+        btnCloseSettings: "Закрыць", buyBtn: "Купіць у Telegram",
+        unavailableBtn: "Спасылка недаступная", brandLbl: "Брэнд", catLbl: "Катэгорыя",
+        skuLbl: "Артыкул", sizesLbl: "Памеры", emptyMsg: "Тавары не знойдзены",
+        loading: "Загрузка...", loadError: "Не ўдалося загрузіць каталог.",
+        retry: "Паспрабаваць яшчэ раз", noImage: "Няма фота",
+        catClothes: "Адзенне", catShoes: "Абутак", catAccessories: "Аксэсуары"
+      },
+      de: {
+        siteTitle: "Premium Kleidung & Schuhe",
+        btnFilters: "🔍 Filter", btnSettings: "⚙️ Einstellungen",
+        searchPlaceholder: "Nach Name oder Artikelnummer suchen...",
+        titleFilter: "Produktfilter", secCat: "Kategorie:",
+        optAllCat: "Alle Kategorien", optClothes: "Kleidung", optShoes: "Schuhe", optAcc: "Accessoires",
+        lblBrand: "Marke:", optAllBrands: "Alle Marken", optOtherBrand: "Andere",
+        secPrice: "Preis:", pFrom: "Von", pTo: "Bis", secSize: "Größen:",
+        lblSort: "Sortierung:", optNew: "Neueste zuerst",
+        optAsc: "Preis aufsteigend", optDesc: "Preis absteigend",
+        btnApplyFilter: "✓ Anwenden", btnResetFilter: "↺ Filter zurücksetzen",
+        titleSettings: "Seiteneinstellungen", lblLang: "Sprache:", lblTheme: "Design:",
+        optDark: "Dunkel", optLight: "Hell", lblCurrency: "Währung:",
+        btnCloseSettings: "Schließen", buyBtn: "Über Telegram kaufen",
+        unavailableBtn: "Link nicht verfügbar", brandLbl: "Marke", catLbl: "Kategorie",
+        skuLbl: "Artikelnummer", sizesLbl: "Größen", emptyMsg: "Keine Produkte gefunden",
+        loading: "Wird geladen...", loadError: "Der Katalog konnte nicht geladen werden.",
+        retry: "Erneut versuchen", noImage: "Kein Bild",
+        catClothes: "Kleidung", catShoes: "Schuhe", catAccessories: "Accessoires"
+      },
+      zh: {
+        siteTitle: "精品服装与鞋履",
+        btnFilters: "🔍 筛选", btnSettings: "⚙️ 设置",
+        searchPlaceholder: "按名称或商品编号搜索...",
+        titleFilter: "商品筛选", secCat: "分类：",
+        optAllCat: "所有分类", optClothes: "服装", optShoes: "鞋履", optAcc: "配饰",
+        lblBrand: "品牌：", optAllBrands: "所有品牌", optOtherBrand: "其他",
+        secPrice: "价格：", pFrom: "最低", pTo: "最高", secSize: "尺码：",
+        lblSort: "排序：", optNew: "最新优先",
+        optAsc: "价格从低到高", optDesc: "价格从高到低",
+        btnApplyFilter: "✓ 应用", btnResetFilter: "↺ 重置筛选",
+        titleSettings: "网站设置", lblLang: "语言：", lblTheme: "主题：",
+        optDark: "深色", optLight: "浅色", lblCurrency: "货币：",
+        btnCloseSettings: "关闭", buyBtn: "在 Telegram 购买",
+        unavailableBtn: "链接不可用", brandLbl: "品牌", catLbl: "分类",
+        skuLbl: "商品编号", sizesLbl: "尺码", emptyMsg: "未找到商品",
+        loading: "加载中...", loadError: "无法加载商品目录。",
+        retry: "重试", noImage: "暂无图片",
+        catClothes: "服装", catShoes: "鞋履", catAccessories: "配饰"
+      },
+      pl: {
+        siteTitle: "Odzież i Obuwie Premium",
+        btnFilters: "🔍 Filtry", btnSettings: "⚙️ Ustawienia",
+        searchPlaceholder: "Szukaj po nazwie lub numerze artykułu...",
+        titleFilter: "Filtry produktów", secCat: "Kategoria:",
+        optAllCat: "Wszystkie kategorie", optClothes: "Odzież", optShoes: "Obuwie", optAcc: "Akcesoria",
+        lblBrand: "Marka:", optAllBrands: "Wszystkie marki", optOtherBrand: "Inne",
+        secPrice: "Cena:", pFrom: "Od", pTo: "Do", secSize: "Rozmiary:",
+        lblSort: "Sortowanie:", optNew: "Najpierw najnowsze",
+        optAsc: "Od najtańszych", optDesc: "Od najdroższych",
+        btnApplyFilter: "✓ Zastosuj", btnResetFilter: "↺ Resetuj filtry",
+        titleSettings: "Ustawienia strony", lblLang: "Język:", lblTheme: "Motyw:",
+        optDark: "Ciemny", optLight: "Jasny", lblCurrency: "Waluta:",
+        btnCloseSettings: "Zamknij", buyBtn: "Kup przez Telegram",
+        unavailableBtn: "Link niedostępny", brandLbl: "Marka", catLbl: "Kategoria",
+        skuLbl: "Numer artykułu", sizesLbl: "Rozmiary", emptyMsg: "Nie znaleziono produktów",
+        loading: "Ładowanie...", loadError: "Nie udało się załadować katalogu.",
+        retry: "Spróbuj ponownie", noImage: "Brak zdjęcia",
+        catClothes: "Odzież", catShoes: "Obuwie", catAccessories: "Akcesoria"
+      }
+    };
+
+    const $ = id => document.getElementById(id);
+    const getLang = () => $("langSelect").value in translations ? $("langSelect").value : "uk";
+    const getT = () => translations[getLang()];
+
+    // Словарь обычных слов в названиях товаров.
+    // Бренды, модели, артикулы и неизвестные слова НЕ меняются.
+    const PRODUCT_WORDS = {
+      "кроссовки": {uk:"Кросівки", ru:"Кроссовки", en:"Sneakers", be:"Красоўкі", de:"Sneaker", zh:"运动鞋", pl:"Sneakersy"},
+      "кросівки":  {uk:"Кросівки", ru:"Кроссовки", en:"Sneakers", be:"Красоўкі", de:"Sneaker", zh:"运动鞋", pl:"Sneakersy"},
+      "худи":       {uk:"Худі", ru:"Худи", en:"Hoodie", be:"Худзі", de:"Hoodie", zh:"连帽衫", pl:"Bluza z kapturem"},
+      "худі":       {uk:"Худі", ru:"Худи", en:"Hoodie", be:"Худзі", de:"Hoodie", zh:"连帽衫", pl:"Bluza z kapturem"},
+      "футболка":   {uk:"Футболка", ru:"Футболка", en:"T-shirt", be:"Футболка", de:"T-Shirt", zh:"T恤", pl:"T-shirt"},
+      "футболки":   {uk:"Футболки", ru:"Футболки", en:"T-shirts", be:"Футболкі", de:"T-Shirts", zh:"T恤", pl:"T-shirty"},
+      "штаны":      {uk:"Штани", ru:"Штаны", en:"Pants", be:"Штаны", de:"Hose", zh:"长裤", pl:"Spodnie"},
+      "штани":      {uk:"Штани", ru:"Штаны", en:"Pants", be:"Штаны", de:"Hose", zh:"长裤", pl:"Spodnie"},
+      "брюки":      {uk:"Штани", ru:"Брюки", en:"Trousers", be:"Штаны", de:"Hose", zh:"长裤", pl:"Spodnie"},
+      "джинсы":     {uk:"Джинси", ru:"Джинсы", en:"Jeans", be:"Джынсы", de:"Jeans", zh:"牛仔裤", pl:"Jeansy"},
+      "джинси":     {uk:"Джинси", ru:"Джинсы", en:"Jeans", be:"Джынсы", de:"Jeans", zh:"牛仔裤", pl:"Jeansy"},
+      "шорты":      {uk:"Шорти", ru:"Шорты", en:"Shorts", be:"Шорты", de:"Shorts", zh:"短裤", pl:"Szorty"},
+      "шорти":      {uk:"Шорти", ru:"Шорты", en:"Shorts", be:"Шорты", de:"Shorts", zh:"短裤", pl:"Szorty"},
+      "куртка":     {uk:"Куртка", ru:"Куртка", en:"Jacket", be:"Куртка", de:"Jacke", zh:"夹克", pl:"Kurtka"},
+      "ветровка":   {uk:"Вітровка", ru:"Ветровка", en:"Windbreaker", be:"Вятроўка", de:"Windjacke", zh:"风衣", pl:"Wiatrówka"},
+      "вітровка":   {uk:"Вітровка", ru:"Ветровка", en:"Windbreaker", be:"Вятроўка", de:"Windjacke", zh:"风衣", pl:"Wiatrówka"},
+      "кофта":      {uk:"Кофта", ru:"Кофта", en:"Sweater", be:"Кофта", de:"Pullover", zh:"毛衣", pl:"Sweter"},
+      "свитшот":    {uk:"Світшот", ru:"Свитшот", en:"Sweatshirt", be:"Світшот", de:"Sweatshirt", zh:"卫衣", pl:"Bluza"},
+      "світшот":    {uk:"Світшот", ru:"Свитшот", en:"Sweatshirt", be:"Світшот", de:"Sweatshirt", zh:"卫衣", pl:"Bluza"},
+      "рубашка":    {uk:"Сорочка", ru:"Рубашка", en:"Shirt", be:"Кашуля", de:"Hemd", zh:"衬衫", pl:"Koszula"},
+      "сорочка":    {uk:"Сорочка", ru:"Рубашка", en:"Shirt", be:"Кашуля", de:"Hemd", zh:"衬衫", pl:"Koszula"},
+      "поло":       {uk:"Поло", ru:"Поло", en:"Polo", be:"Пола", de:"Polo", zh:"Polo衫", pl:"Polo"},
+      "майка":      {uk:"Майка", ru:"Майка", en:"Tank top", be:"Майка", de:"Tanktop", zh:"背心", pl:"Top"},
+      "кепка":      {uk:"Кепка", ru:"Кепка", en:"Cap", be:"Кепка", de:"Kappe", zh:"帽子", pl:"Czapka"},
+      "шапка":      {uk:"Шапка", ru:"Шапка", en:"Beanie", be:"Шапка", de:"Mütze", zh:"针织帽", pl:"Czapka"},
+      "носки":      {uk:"Шкарпетки", ru:"Носки", en:"Socks", be:"Шкарпэткі", de:"Socken", zh:"袜子", pl:"Skarpetki"},
+      "шкарпетки":  {uk:"Шкарпетки", ru:"Носки", en:"Socks", be:"Шкарпэткі", de:"Socken", zh:"袜子", pl:"Skarpetki"},
+      "ботинки":    {uk:"Черевики", ru:"Ботинки", en:"Boots", be:"Чаравікі", de:"Stiefel", zh:"靴子", pl:"Buty"},
+      "черевики":   {uk:"Черевики", ru:"Ботинки", en:"Boots", be:"Чаравікі", de:"Stiefel", zh:"靴子", pl:"Buty"},
+      "туфли":      {uk:"Туфлі", ru:"Туфли", en:"Shoes", be:"Туфлі", de:"Schuhe", zh:"鞋", pl:"Półbuty"},
+      "туфлі":      {uk:"Туфлі", ru:"Туфли", en:"Shoes", be:"Туфлі", de:"Schuhe", zh:"鞋", pl:"Półbuty"},
+      "сандалии":   {uk:"Сандалі", ru:"Сандалии", en:"Sandals", be:"Сандалі", de:"Sandalen", zh:"凉鞋", pl:"Sandały"},
+      "сандалі":    {uk:"Сандалі", ru:"Сандалии", en:"Sandals", be:"Сандалі", de:"Sandalen", zh:"凉鞋", pl:"Sandały"},
+      "тапочки":    {uk:"Капці", ru:"Тапочки", en:"Slippers", be:"Тапачкі", de:"Hausschuhe", zh:"拖鞋", pl:"Kapcie"},
+      "капці":      {uk:"Капці", ru:"Тапочки", en:"Slippers", be:"Тапачкі", de:"Hausschuhe", zh:"拖鞋", pl:"Kapcie"},
+      "сумка":      {uk:"Сумка", ru:"Сумка", en:"Bag", be:"Сумка", de:"Tasche", zh:"包", pl:"Torba"},
+      "рюкзак":     {uk:"Рюкзак", ru:"Рюкзак", en:"Backpack", be:"Заплечнік", de:"Rucksack", zh:"双肩包", pl:"Plecak"},
+      "ремень":     {uk:"Ремінь", ru:"Ремень", en:"Belt", be:"Рэмень", de:"Gürtel", zh:"腰带", pl:"Pasek"},
+      "ремінь":     {uk:"Ремінь", ru:"Ремень", en:"Belt", be:"Рэмень", de:"Gürtel", zh:"腰带", pl:"Pasek"},
+      "очки":       {uk:"Окуляри", ru:"Очки", en:"Glasses", be:"Акуляры", de:"Brille", zh:"眼镜", pl:"Okulary"},
+      "окуляри":    {uk:"Окуляри", ru:"Очки", en:"Glasses", be:"Акуляры", de:"Brille", zh:"眼镜", pl:"Okulary"},
+      "перчатки":   {uk:"Рукавички", ru:"Перчатки", en:"Gloves", be:"Пальчаткі", de:"Handschuhe", zh:"手套", pl:"Rękawiczki"},
+      "рукавички":  {uk:"Рукавички", ru:"Перчатки", en:"Gloves", be:"Пальчаткі", de:"Handschuhe", zh:"手套", pl:"Rękawiczki"},
+      "мужские":    {uk:"Чоловічі", ru:"Мужские", en:"Men's", be:"Мужчынскія", de:"Herren", zh:"男款", pl:"Męskie"},
+      "чоловічі":   {uk:"Чоловічі", ru:"Мужские", en:"Men's", be:"Мужчынскія", de:"Herren", zh:"男款", pl:"Męskie"},
+      "женские":    {uk:"Жіночі", ru:"Женские", en:"Women's", be:"Жаночыя", de:"Damen", zh:"女款", pl:"Damskie"},
+      "жіночі":     {uk:"Жіночі", ru:"Женские", en:"Women's", be:"Жаночыя", de:"Damen", zh:"女款", pl:"Damskie"},
+      "детские":    {uk:"Дитячі", ru:"Детские", en:"Kids'", be:"Дзіцячыя", de:"Kinder", zh:"童款", pl:"Dziecięce"},
+      "дитячі":     {uk:"Дитячі", ru:"Детские", en:"Kids'", be:"Дзіцячыя", de:"Kinder", zh:"童款", pl:"Dziecięce"},
+      "черный":     {uk:"Чорний", ru:"Чёрный", en:"Black", be:"Чорны", de:"Schwarz", zh:"黑色", pl:"Czarny"},
+      "чёрный":     {uk:"Чорний", ru:"Чёрный", en:"Black", be:"Чорны", de:"Schwarz", zh:"黑色", pl:"Czarny"},
+      "чорний":     {uk:"Чорний", ru:"Чёрный", en:"Black", be:"Чорны", de:"Schwarz", zh:"黑色", pl:"Czarny"},
+      "белый":      {uk:"Білий", ru:"Белый", en:"White", be:"Белы", de:"Weiß", zh:"白色", pl:"Biały"},
+      "білий":      {uk:"Білий", ru:"Белый", en:"White", be:"Белы", de:"Weiß", zh:"白色", pl:"Biały"},
+      "красный":    {uk:"Червоний", ru:"Красный", en:"Red", be:"Чырвоны", de:"Rot", zh:"红色", pl:"Czerwony"},
+      "червоний":   {uk:"Червоний", ru:"Красный", en:"Red", be:"Чырвоны", de:"Rot", zh:"红色", pl:"Czerwony"},
+      "синий":      {uk:"Синій", ru:"Синий", en:"Blue", be:"Сіні", de:"Blau", zh:"蓝色", pl:"Niebieski"},
+      "синій":      {uk:"Синій", ru:"Синий", en:"Blue", be:"Сіні", de:"Blau", zh:"蓝色", pl:"Niebieski"},
+      "зеленый":    {uk:"Зелений", ru:"Зелёный", en:"Green", be:"Зялёны", de:"Grün", zh:"绿色", pl:"Zielony"},
+      "зелёный":    {uk:"Зелений", ru:"Зелёный", en:"Green", be:"Зялёны", de:"Grün", zh:"绿色", pl:"Zielony"},
+      "зелений":    {uk:"Зелений", ru:"Зелёный", en:"Green", be:"Зялёны", de:"Grün", zh:"绿色", pl:"Zielony"}
+    };
+
+    const SYSTEM_VALUES = {
+      "інше": {uk:"Інше", ru:"Другое", en:"Other", be:"Іншае", de:"Andere", zh:"其他", pl:"Inne"},
+      "другое": {uk:"Інше", ru:"Другое", en:"Other", be:"Іншае", de:"Andere", zh:"其他", pl:"Inne"},
+      "other": {uk:"Інше", ru:"Другое", en:"Other", be:"Іншае", de:"Andere", zh:"其他", pl:"Inne"}
+    };
+
+    function translateProductTitle(value) {
+      const original = String(value || "").trim();
+      if (!original) return "—";
+      const lang = getLang();
+
+      // Разбиваем только по пробелам/дефисам, поэтому Nike, Adidas, Air Max,
+      // номера моделей, SKU и любые неизвестные названия остаются как в базе.
+      return original.split(/(\s+|[-–—/])/).map(part => {
+        const key = part.toLocaleLowerCase();
+        const entry = PRODUCT_WORDS[key];
+        return entry?.[lang] || part;
+      }).join("");
+    }
+
+    function translateSystemValue(value) {
+      const original = String(value || "").trim();
+      if (!original) return "—";
+      return SYSTEM_VALUES[original.toLocaleLowerCase()]?.[getLang()] || original;
+    }
+
+    function categoryName(category) {
+      const t = getT();
+      return ({clothes:t.catClothes, shoes:t.catShoes, accessories:t.catAccessories})[category] || category || "—";
+    }
+
+    function validHttpUrl(value) {
+      try {
+        const url = new URL(value);
+        return ["http:", "https:"].includes(url.protocol) ? url.href : null;
+      } catch { return null; }
+    }
+
+    function formatPrice(value) {
+      const priceUAH = Number(value);
+      const safePrice = Number.isFinite(priceUAH) ? priceUAH : 0;
+      const locale = {
+        uk: "uk-UA", ru: "ru-RU", en: "en-US", be: "be-BY",
+        de: "de-DE", zh: "zh-CN", pl: "pl-PL"
+      }[getLang()] || "uk-UA";
+
+      if ($("currencySelect").value === "USD") {
+        const usd = safePrice / UAH_PER_USD;
+        return new Intl.NumberFormat(locale, {
+          style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2
+        }).format(usd);
+      }
+      return new Intl.NumberFormat(locale, {
+        style: "currency", currency: "UAH", maximumFractionDigits: 0
+      }).format(safePrice);
+    }
+
+    function getSelectedSizes() {
+      return [...document.querySelectorAll(".size-checkbox:checked")].map(cb => cb.value);
+    }
+
+    function renderSizeCheckboxes(preserve = true) {
+      const oldSelected = preserve ? new Set(getSelectedSizes()) : new Set();
+      const category = $("categorySelect").value;
+      const container = $("sizesColumnList");
+      container.replaceChildren();
+
+      let targetSizes = [];
+      if (category === "clothes") targetSizes = CLOTHES_SIZES;
+      else if (category === "shoes") targetSizes = SHOE_SIZES;
+      else if (category === "accessories") targetSizes = [];
+      else targetSizes = [...CLOTHES_SIZES, ...SHOE_SIZES];
+
+      if (!targetSizes.length) {
+        const note = document.createElement("span");
+        note.className = "card-meta";
+        note.textContent = "—";
+        container.appendChild(note);
+        return;
+      }
+
+      targetSizes.forEach(size => {
+        const label = document.createElement("label");
+        label.className = "size-column-item";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = size;
+        input.className = "size-checkbox";
+        input.checked = oldSelected.has(size);
+        const span = document.createElement("span");
+        span.textContent = size;
+        label.append(input, span);
+        container.appendChild(label);
+      });
+    }
+
+    async function loadProducts() {
+      const t = getT();
+      $("productsGrid").innerHTML = `<div class="empty-msg">${t.loading}</div>`;
+      try {
+        const { data, error } = await supabaseClient
+          .from("products")
+          .select("id,title,sku,category,brand,price,image_url,tg_link,sizes")
+          .order("id", { ascending: false });
+
+        if (error) throw error;
+        allProducts = data || [];
+        filterAndRender();
+      } catch (err) {
+        console.error(err);
+        showLoadError();
+      }
+    }
+
+    function showLoadError() {
+      const grid = $("productsGrid");
+      const t = getT();
+      grid.replaceChildren();
+      const box = document.createElement("div");
+      box.className = "empty-msg";
+      const text = document.createElement("div");
+      text.textContent = t.loadError;
+      const retry = document.createElement("button");
+      retry.type = "button";
+      retry.className = "btn-action retry-btn";
+      retry.textContent = t.retry;
+      retry.addEventListener("click", loadProducts);
+      box.append(text, retry);
+      grid.appendChild(box);
+    }
+
+    function filterAndRender() {
+      const search = $("searchInput").value.trim().toLocaleLowerCase();
+      const category = $("categorySelect").value;
+      const selectedBrand = $("brandSelect").value;
+      const fromRaw = Number($("priceFrom").value);
+      const toRaw = Number($("priceTo").value);
+      const filterCurrency = $("currencySelect").value;
+      const priceMultiplier = filterCurrency === "USD" ? UAH_PER_USD : 1;
+      const pFrom = $("priceFrom").value === "" || !Number.isFinite(fromRaw)
+        ? 0
+        : Math.max(0, fromRaw) * priceMultiplier;
+      const pTo = $("priceTo").value === "" || !Number.isFinite(toRaw)
+        ? Infinity
+        : Math.max(0, toRaw) * priceMultiplier;
+      const checkedSizes = getSelectedSizes();
+
+      let filtered = allProducts.filter(p => {
+        const title = String(p.title || "").toLocaleLowerCase();
+        const translatedTitle = translateProductTitle(p.title).toLocaleLowerCase();
+        const sku = String(p.sku || "").toLocaleLowerCase();
+        const matchText = title.includes(search) || translatedTitle.includes(search) || sku.includes(search);
+        const matchCategory = category === "all" || p.category === category;
+        const matchBrand = selectedBrand === "all" || String(p.brand || "").toLocaleLowerCase() === selectedBrand.toLocaleLowerCase();
+        const price = Number(p.price);
+        const safePrice = Number.isFinite(price) ? price : 0;
+        const matchPrice = safePrice >= pFrom && safePrice <= pTo;
+        const matchSize = checkedSizes.length === 0 ||
+          (Array.isArray(p.sizes) && checkedSizes.some(size => p.sizes.includes(size)));
+        return matchText && matchCategory && matchBrand && matchPrice && matchSize;
+      });
+
+      const sort = $("sortSelect").value;
+      if (sort === "price_asc") filtered.sort((a,b) => Number(a.price) - Number(b.price));
+      else if (sort === "price_desc") filtered.sort((a,b) => Number(b.price) - Number(a.price));
+      else filtered.sort((a,b) => Number(b.id) - Number(a.id));
+
+      renderProducts(filtered);
+    }
+
+    function renderProducts(products) {
+      const grid = $("productsGrid");
+      const t = getT();
+      grid.replaceChildren();
+
+      if (!products.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-msg";
+        empty.textContent = t.emptyMsg;
+        grid.appendChild(empty);
+        return;
+      }
+
+      products.forEach(p => {
+        const card = document.createElement("article");
+        card.className = "card";
+
+        const imageUrl = validHttpUrl(p.image_url);
+        if (imageUrl) {
+          const img = document.createElement("img");
+          img.className = "product-image";
+          img.src = imageUrl;
+          img.alt = String(p.title || "");
+          img.loading = "lazy";
+          img.addEventListener("error", () => {
+            const fallback = document.createElement("div");
+            fallback.className = "image-placeholder";
+            fallback.textContent = "🖼️";
+            fallback.title = t.noImage;
+            img.replaceWith(fallback);
+          }, {once:true});
+          card.appendChild(img);
+        } else {
+          const fallback = document.createElement("div");
+          fallback.className = "image-placeholder";
+          fallback.textContent = "🖼️";
+          fallback.title = t.noImage;
+          card.appendChild(fallback);
+        }
+
+        const body = document.createElement("div");
+        body.className = "card-body";
+
+        const title = document.createElement("h3");
+        title.className = "card-title";
+        title.textContent = translateProductTitle(p.title);
+
+        const sku = document.createElement("div");
+        sku.className = "card-sku";
+        sku.textContent = `${t.skuLbl}: ${p.sku || "—"}`;
+
+        const meta = document.createElement("div");
+        meta.className = "card-meta";
+        meta.textContent = `${t.brandLbl}: ${translateSystemValue(p.brand)} | ${t.catLbl}: ${categoryName(p.category)}`;
+
+        const price = document.createElement("div");
+        price.className = "card-price";
+        price.textContent = formatPrice(p.price);
+
+        body.append(title, sku, meta, price);
+
+        if (Array.isArray(p.sizes) && p.sizes.length) {
+          const sizes = document.createElement("div");
+          sizes.className = "sizes-list";
+          sizes.setAttribute("aria-label", t.sizesLbl);
+          p.sizes.forEach(size => {
+            const tag = document.createElement("span");
+            tag.className = "size-tag";
+            tag.textContent = size;
+            sizes.appendChild(tag);
+          });
+          body.appendChild(sizes);
+        }
+
+        const tgUrl = validHttpUrl(p.tg_link);
+        const buy = document.createElement("a");
+        buy.className = "btn-buy";
+        if (tgUrl) {
+          buy.href = tgUrl;
+          buy.target = "_blank";
+          buy.rel = "noopener noreferrer";
+          buy.textContent = t.buyBtn;
+        } else {
+          buy.classList.add("disabled");
+          buy.textContent = t.unavailableBtn;
+          buy.setAttribute("aria-disabled", "true");
+        }
+
+        body.appendChild(buy);
+        card.appendChild(body);
+        grid.appendChild(card);
+      });
+    }
+
+    function applyTranslations() {
+      const t = getT();
+      document.documentElement.lang = getLang();
+      document.title = t.siteTitle;
+      $("siteTitle").textContent = t.siteTitle;
+      $("btnFilters").textContent = t.btnFilters;
+      $("btnSettings").textContent = t.btnSettings;
+      $("searchInput").placeholder = t.searchPlaceholder;
+      $("titleFilter").textContent = t.titleFilter;
+      $("secCat").textContent = t.secCat;
+      $("optAllCat").textContent = t.optAllCat;
+      $("optClothes").textContent = t.optClothes;
+      $("optShoes").textContent = t.optShoes;
+      $("optAcc").textContent = t.optAcc;
+      $("lblBrand").textContent = t.lblBrand;
+      $("optAllBrands").textContent = t.optAllBrands;
+      $("optOtherBrand").textContent = t.optOtherBrand;
+      $("secPrice").textContent = t.secPrice;
+      $("priceFrom").placeholder = t.pFrom;
+      $("priceTo").placeholder = t.pTo;
+      $("secSize").textContent = t.secSize;
+      $("lblSort").textContent = t.lblSort;
+      $("optNew").textContent = t.optNew;
+      $("optAsc").textContent = t.optAsc;
+      $("optDesc").textContent = t.optDesc;
+      $("btnApplyFilter").textContent = t.btnApplyFilter;
+      $("btnResetFilter").textContent = t.btnResetFilter;
+      $("titleSettings").textContent = t.titleSettings;
+      $("lblLang").textContent = t.lblLang;
+      $("lblTheme").textContent = t.lblTheme;
+      $("optDark").textContent = t.optDark;
+      $("optLight").textContent = t.optLight;
+      $("lblCurrency").textContent = t.lblCurrency;
+      $("btnCloseSettings").textContent = t.btnCloseSettings;
+      filterAndRender();
+    }
+
+    function saveSettings() {
+      localStorage.setItem("shop_lang", $("langSelect").value);
+      localStorage.setItem("shop_theme", $("themeSelect").value);
+      localStorage.setItem("shop_currency", $("currencySelect").value);
+    }
+
+    function applyTheme() {
+      document.body.classList.toggle("light-theme", $("themeSelect").value === "light");
+    }
+
+    function resetFilters() {
+      $("categorySelect").value = "all";
+      $("brandSelect").value = "all";
+      $("priceFrom").value = "";
+      $("priceTo").value = "";
+      $("sortSelect").value = "default";
+      renderSizeCheckboxes(false);
+      filterAndRender();
+    }
+
+    function openModal(id) {
+      $(id).classList.add("open");
+      document.body.classList.add("modal-open");
+    }
+
+    function closeModal(id) {
+      $(id).classList.remove("open");
+      if (!document.querySelector(".modal.open")) document.body.classList.remove("modal-open");
+    }
+
+    function restoreSettings() {
+      const lang = localStorage.getItem("shop_lang");
+      const theme = localStorage.getItem("shop_theme");
+      const currency = localStorage.getItem("shop_currency");
+      if (lang && translations[lang]) $("langSelect").value = lang;
+      if (theme === "dark" || theme === "light") $("themeSelect").value = theme;
+      if (currency === "UAH" || currency === "USD") $("currencySelect").value = currency;
+      applyTheme();
+      applyTranslations();
+    }
+
+    $("btnFilters").addEventListener("click", () => openModal("filterModal"));
+    $("btnSettings").addEventListener("click", () => openModal("settingsModal"));
+    $("btnCloseSettings").addEventListener("click", () => closeModal("settingsModal"));
+
+    document.querySelectorAll("[data-close]").forEach(btn => {
+      btn.addEventListener("click", () => closeModal(btn.dataset.close));
+    });
+
+    document.querySelectorAll(".modal").forEach(modal => {
+      modal.addEventListener("click", e => {
+        if (e.target === modal) closeModal(modal.id);
+      });
+    });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        document.querySelectorAll(".modal.open").forEach(modal => closeModal(modal.id));
+      }
+    });
+
+    $("categorySelect").addEventListener("change", () => renderSizeCheckboxes(true));
+    $("btnApplyFilter").addEventListener("click", () => {
+      filterAndRender();
+      closeModal("filterModal");
+    });
+    $("btnResetFilter").addEventListener("click", resetFilters);
+
+    $("searchInput").addEventListener("input", () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(filterAndRender, 180);
+    });
+
+    $("langSelect").addEventListener("change", () => {
+      saveSettings();
+      applyTranslations();
+    });
+
+    $("themeSelect").addEventListener("change", () => {
+      saveSettings();
+      applyTheme();
+    });
+
+    $("currencySelect").addEventListener("change", () => {
+      saveSettings();
+      $("priceFrom").value = "";
+      $("priceTo").value = "";
+      filterAndRender();
+    });
+
+    restoreSettings();
+    renderSizeCheckboxes(false);
+    loadProducts();
+  </script>
+</body>
+</html>
